@@ -1,262 +1,335 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Habit Lock</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-    /* [디자인 시스템 변수 - 화사하고 깨끗한 톤] */
-    :root {
-        --bg-page: #f8fafc;         /* 화사하고 투명한 배경 */
-        --bg-card: #ffffff;         /* 순백색 카드 배경 */
-        --text-main: #0f172a;       /* 가독성 높은 차콜 블랙 */
-        --text-sub: #64748b;        /* 감각적인 슬레이트 그레이 */
-        --primary-blue: #3b82f6;    /* 세련된 구글 시그니처 블루 */
-        --primary-hover: #2563eb;
-        --danger-red: #ef4444;      /* 경고 및 포기 버튼용 레드 */
-        --danger-hover: #dc2626;
-        --border-color: #e2e8f0;    /* 연하고 깔끔한 테두리 */
-        
-        /* 달력용 세련된 파스텔 색감 */
-        --cal-today: #eff6ff;       /* 오늘 날짜 강조 배경 */
-        --cal-success: #dcfce7;     /* 성공한 날 은은한 초록 */
-        --cal-success-text: #166534;
-    }
-
-    /* 기본 초기화 */
-    * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-        font-family: 'Noto Sans KR', sans-serif;
-        -webkit-font-smoothing: antialiased;
-    }
-
-    body {
-        background-color: var(--bg-page);
-        color: var(--text-main);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        min-height: 100vh;
-        padding: 40px 20px;
-    }
-
-    /* 1. 메인 레이아웃 및 카드 구조 스타일링 (기존 div 구조 그대로 유지) */
-    body > div:not([id$="Modal"]), 
-    div[id$="Modal"] > div {
-        background-color: var(--bg-card);
-        border-radius: 24px;
-        padding: 40px 30px;
-        width: 100%;
-        max-width: 440px;
-        text-align: center;
-        box-shadow: 0 16px 36px rgba(148, 163, 184, 0.08);
-        border: 1px solid rgba(226, 232, 240, 0.8);
-        margin-bottom: 24px; /* 요소 간 간격 */
-    }
-
-    /* 타이틀 및 텍스트 */
-    h1, h2, h3 {
-        color: var(--text-main);
-        font-weight: 700;
-        margin-bottom: 8px;
-        letter-spacing: -0.5px;
-    }
-    
-    h1 { font-size: 1.8rem; }
-    h2 { font-size: 1.4rem; }
-
-    p {
-        font-size: 0.95rem;
-        color: var(--text-sub);
-        margin-bottom: 24px;
-        line-height: 1.5;
-    }
-
-    /* 2. 메인 타이머 디스플레이 */
-    #timerDisplay {
-        font-family: 'system-ui', -apple-system, BlinkMacSystemFont, sans-serif;
-        font-size: 4.5rem;
-        font-weight: 700;
-        color: var(--primary-blue);
-        margin: 24px 0 32px 0;
-        letter-spacing: -1px;
-    }
-
-    /* 3. 입력 폼 컴포넌트 */
-    label {
-        display: block;
-        text-align: left;
-        font-size: 0.85rem;
-        font-weight: 700;
-        color: var(--text-main);
-        margin-bottom: 6px;
-    }
-
-    input[type="text"], select {
-        width: 100%;
-        padding: 14px 16px;
-        margin-bottom: 20px;
-        border: 1px solid var(--border-color);
-        border-radius: 12px;
-        background-color: #f1f5f9;
-        color: var(--text-main);
-        font-size: 0.95rem;
-        transition: all 0.2s ease;
-    }
-
-    input[type="text"]:focus, select:focus {
-        outline: none;
-        border-color: var(--primary-blue);
-        background-color: #ffffff;
-        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
-    }
-
-    /* 4. 버튼 스타일 (구조 변형 없이 색감과 정돈감만 부여) */
-    button {
-        width: 100%;
-        padding: 15px;
-        border: none;
-        border-radius: 12px;
-        font-size: 1rem;
-        font-weight: 700;
-        cursor: pointer;
-        transition: all 0.2s ease-in-out;
-        margin-bottom: 12px;
-    }
-
-    button:active {
-        transform: scale(0.98);
-    }
-
-    #openSettingsBtn, #startTimerBtn {
-        background-color: var(--primary-blue);
-        color: #ffffff;
-        box-shadow: 0 4px 14px rgba(59, 130, 246, 0.15);
-        margin-bottom: 0;
-    }
-
-    #openSettingsBtn:hover, #startTimerBtn:hover {
-        background-color: var(--primary-hover);
-    }
-
-    #closeSettingsBtn, #closeConfirmBtn {
-        background-color: #f1f5f9;
-        color: var(--text-sub);
-        margin-top: 12px;
-        margin-bottom: 0;
-    }
-
-    #closeSettingsBtn:hover, #closeConfirmBtn:hover {
-        background-color: #e2e8f0;
-        color: var(--text-main);
-    }
-
-    #giveUpBtn, #finalGiveUpBtn {
-        background-color: var(--danger-red);
-        color: #ffffff;
-        box-shadow: 0 4px 14px rgba(239, 68, 68, 0.1);
-        margin-bottom: 0;
-    }
-
-    #giveUpBtn:hover, #finalGiveUpBtn:hover {
-        background-color: var(--danger-hover);
-    }
-
-    #penaltyConfirmText {
-        display: inline-block;
-        font-weight: 700;
-        color: var(--danger-red);
-        background-color: #fef2f2;
-        padding: 4px 10px;
-        border-radius: 8px;
-        margin-top: 6px;
-    }
-
-    /* 5. 불릿 리스트(스트릭/기록 영역) 디자인 */
-    ul, ol {
-        text-align: left;
-        padding-left: 20px;
-        margin: 16px 0;
-        color: var(--text-main);
-    }
-
-    li {
-        font-size: 0.95rem;
-        line-height: 1.6;
-        margin-bottom: 8px;
-        color: var(--text-sub);
-    }
-    
-    li strong, li span {
-        color: var(--text-main);
-    }
-
-    /* 6. 달력(Calendar) 색감 및 컴팩트 디자인 */
-    /* 기존 테이블이나 그리드 구조의 뼈대는 건드리지 않고 색상과 둥글기만 고급스럽게 조절합니다. */
-    table {
-        width: 100%;
-        border-collapse: separate;
-        border-spacing: 6px;
-        margin-top: 16px;
-    }
-
-    th {
-        font-size: 0.8rem;
-        font-weight: 700;
-        color: var(--text-sub);
-        padding-bottom: 8px;
-        text-transform: uppercase;
-    }
-
-    td {
-        width: 40px;
-        height: 40px;
-        font-size: 0.9rem;
-        font-weight: 600;
-        border-radius: 10px;
-        transition: all 0.2s ease;
-        color: var(--text-main);
-        background-color: #f8fafc; /* 기본 날짜 배경 */
-        vertical-align: middle;
-    }
-
-    /* 달력 안의 특수 상태 클래스 대응 (예시 명칭 기반 스타일링) */
-    td.today, td[class*="today"] {
-        background-color: var(--cal-today) !important;
-        color: var(--primary-blue) !important;
-        box-shadow: inset 0 0 0 2px var(--primary-blue);
-    }
-
-    td.success, td[class*="success"], td.completed {
-        background-color: var(--cal-success) !important;
-        color: var(--cal-success-text) !important;
-    }
-    
-    td.empty, td:empty {
-        background-color: transparent;
-    }
-
-    /* 7. 모달 오버레이 (JS 호환성 100%) */
-    div[id$="Modal"] {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(15, 23, 42, 0.15);
-        backdrop-filter: blur(4px);
-        display: none; /* JS 제어용 */
-        justify-content: center;
-        align-items: center;
-        z-index: 1000;
-        padding: 20px;
-    }
-
-    div[id$="Modal"] > div {
-        text-align: left;
-        margin-bottom: 0;
-        animation: modalPop 0.2s ease-out;
-    }
-
-    @keyframes modalPop {
-        from { transform: scale(0.97); opacity: 0; }
-        to { transform: scale(1); opacity: 1; }
-    }
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:#F5F6F8;font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;display:flex;justify-content:center;min-height:100vh}
+#root{width:100%;max-width:480px;min-height:100vh;position:relative}
+::-webkit-scrollbar{display:none}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes scaleIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+@keyframes toast{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
 </style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+window.onload=function(){
+if(typeof React==='undefined'){document.getElementById('root').innerHTML='<p style="text-align:center;padding:60px 20px;color:#999;font-family:sans-serif">React CDN 로딩 실패. 인터넷 연결을 확인하세요.</p>';return}
+
+var h=React.createElement,us=React.useState,ue=React.useEffect;
+
+var PALETTE=[
+  {bg:"#3182F6",light:"#EBF4FF",pill:"#3182F6",text:"#3182F6",lock:"#B8D4FA"},
+  {bg:"#F04452",light:"#FFF0F1",pill:"#F04452",text:"#F04452",lock:"#F9BCC2"},
+  {bg:"#00B386",light:"#E6F9F3",pill:"#00B386",text:"#00B386",lock:"#99DFC9"},
+  {bg:"#8B5CF6",light:"#F3EEFF",pill:"#8B5CF6",text:"#8B5CF6",lock:"#C9B5FB"},
+  {bg:"#F97316",light:"#FFF4EB",pill:"#F97316",text:"#F97316",lock:"#FDCA9A"},
+  {bg:"#EC4899",light:"#FEF0F7",pill:"#EC4899",text:"#EC4899",lock:"#F6A9D0"},
+  {bg:"#0EA5E9",light:"#EBF8FF",pill:"#0EA5E9",text:"#0EA5E9",lock:"#94D5F3"},
+  {bg:"#84CC16",light:"#F3FCE4",pill:"#84CC16",text:"#5F9913",lock:"#C4E88D"}
+];
+var ICONS=["🍺","🚬","🍔","📱","🎮","☕","🍫","🛒","💳","🍕","🎰","🧁","🥤","📺","🛋️"];
+var DAYS_KR=["일","월","화","수","목","금","토"];
+var CD_OPTS=[2,3,4,5,7,10,14,30];
+
+function fmt(y,m,d){return y+"-"+String(m+1).padStart(2,"0")+"-"+String(d).padStart(2,"0")}
+function prs(s){var p=s.split("-").map(Number);return new Date(p[0],p[1]-1,p[2])}
+function diff(a,b){return Math.floor((prs(b)-prs(a))/864e5)}
+function dim(y,m){return new Date(y,m+1,0).getDate()}
+function fdow(y,m){return new Date(y,m,1).getDay()}
+
+function App(){
+  var _h=us([]),habits=_h[0],setHabits=_h[1];
+  var _cm=us(new Date().getMonth()),cM=_cm[0],setCM=_cm[1];
+  var _cy=us(new Date().getFullYear()),cY=_cy[0],setCY=_cy[1];
+  var _sel=us(null),sel=_sel[0],setSel=_sel[1];
+  var _add=us(false),showAdd=_add[0],setShowAdd=_add[1];
+  var _nn=us(""),nn=_nn[0],setNN=_nn[1];
+  var _nd=us(4),nd=_nd[0],setND=_nd[1];
+  var _ni=us("🍺"),ni=_ni[0],setNI=_ni[1];
+  var _ld=us(false),loaded=_ld[0],setLoaded=_ld[1];
+  var _tt=us(null),toast=_tt[0],setToast=_tt[1];
+  var _del=us(null),delId=_del[0],setDelId=_del[1];
+  var _edit=us(null),editId=_edit[0],setEditId=_edit[1];
+  var _en=us(""),en=_en[0],setEN=_en[1];
+  var _ed=us(4),ed=_ed[0],setED=_ed[1];
+  var _ei=us(""),ei=_ei[0],setEI=_ei[1];
+
+  ue(function(){try{var d=localStorage.getItem("hl2");if(d)setHabits(JSON.parse(d))}catch(e){}setLoaded(true)},[]);
+  ue(function(){if(loaded)try{localStorage.setItem("hl2",JSON.stringify(habits))}catch(e){}},[habits,loaded]);
+  ue(function(){if(toast){var t=setTimeout(function(){setToast(null)},2400);return function(){clearTimeout(t)}}},[toast]);
+
+  var now=new Date(),todayStr=fmt(now.getFullYear(),now.getMonth(),now.getDate());
+
+  function addHabit(){
+    if(!nn.trim())return;
+    setHabits(function(p){return p.concat([{id:Date.now()+"",name:nn.trim(),cd:nd,icon:ni,ci:p.length%PALETTE.length,logs:[]}])});
+    setNN("");setND(4);setNI("🍺");setShowAdd(false);setToast("추가되었어요")
+  }
+  function delHabit(id){setHabits(function(p){return p.filter(function(x){return x.id!==id})});if(sel===id)setSel(null);setDelId(null);setToast("삭제했어요")}
+  function toggleLog(hid,ds){
+    setHabits(function(p){return p.map(function(x){
+      if(x.id!==hid)return x;
+      if(x.logs.indexOf(ds)!==-1)return Object.assign({},x,{logs:x.logs.filter(function(d){return d!==ds})});
+      var locked=x.logs.some(function(ld){var df=diff(ld,ds);return df>0&&df<x.cd});
+      if(locked){setToast("🔒 쿨다운 중이에요!");return x}
+      return Object.assign({},x,{logs:x.logs.concat([ds]).sort()})
+    })})
+  }
+  function getLocked(hab){var lk={};hab.logs.forEach(function(ld){for(var i=1;i<hab.cd;i++){var d=prs(ld);d.setDate(d.getDate()+i);lk[fmt(d.getFullYear(),d.getMonth(),d.getDate())]=true}});return lk}
+  function getNext(hab){if(!hab.logs.length)return null;var last=hab.logs[hab.logs.length-1];var d=prs(last);d.setDate(d.getDate()+hab.cd);return fmt(d.getFullYear(),d.getMonth(),d.getDate())}
+  function prevM(){if(cM===0){setCM(11);setCY(function(y){return y-1})}else setCM(function(m){return m-1})}
+  function nextM(){if(cM===11){setCM(0);setCY(function(y){return y+1})}else setCM(function(m){return m+1})}
+  function goToday(){setCM(now.getMonth());setCY(now.getFullYear())}
+  function saveEdit(){if(!en.trim()||!editId)return;setHabits(function(p){return p.map(function(x){return x.id!==editId?x:Object.assign({},x,{name:en.trim(),cd:ed,icon:ei})})});setEditId(null);setToast("수정했어요")}
+  function openEdit(hab){setEN(hab.name);setED(hab.cd);setEI(hab.icon);setEditId(hab.id)}
+
+  var dinm=dim(cY,cM),fd=fdow(cY,cM);
+  var aH=habits.find(function(x){return x.id===sel})||null;
+  var aLk=aH?getLocked(aH):{};
+  var aC=aH?PALETTE[aH.ci]:null;
+  var allD=sel?[]:habits.map(function(x){return Object.assign({},x,{lk:getLocked(x),c:PALETTE[x.ci]})});
+
+  var cells=[];
+  for(var i=0;i<fd;i++)cells.push(null);
+  for(var d=1;d<=dinm;d++)cells.push(d);
+  // pad to complete last row
+  while(cells.length%7!==0)cells.push(null);
+
+  // ===== STYLES =====
+  var white="#FFFFFF",g1="#191F28",g2="#333D4B",g3="#6B7684",g4="#8B95A1",g5="#B0B8C1",g6="#D1D6DB",g7="#E5E8EB",g8="#F2F4F6",g9="#F7F8FA";
+
+  // ===== RENDER =====
+
+  // -- Header --
+  var header=h('div',{style:{padding:"52px 24px 8px",display:"flex",justifyContent:"space-between",alignItems:"center"}},
+    h('div',null,
+      h('div',{style:{fontSize:22,fontWeight:700,color:g1,letterSpacing:"-0.5px"}},"Habit Lock"),
+      h('div',{style:{fontSize:13,color:g4,marginTop:2,fontWeight:400}},"하면 안 되는 습관 관리")
+    ),
+    h('button',{onClick:function(){setShowAdd(true)},style:{width:40,height:40,borderRadius:20,background:white,border:"1px solid "+g7,display:"flex",alignItems:"center",justifyContent:"center",cursor:"pointer",boxShadow:"0 1px 3px rgba(0,0,0,0.04)",fontSize:20,color:g2,lineHeight:1}},"＋")
+  );
+
+  // -- Bullets --
+  var bullets=h('div',{style:{padding:"12px 24px 16px",overflowX:"auto"}},
+    h('div',{style:{display:"flex",gap:8}},
+      h('button',{key:"all",onClick:function(){setSel(null)},style:{
+        display:"flex",alignItems:"center",gap:6,padding:"8px 16px",borderRadius:24,border:"none",cursor:"pointer",whiteSpace:"nowrap",fontSize:13,fontWeight:600,fontFamily:"inherit",
+        background:!sel?"#191F28":"#FFFFFF",color:!sel?"#FFFFFF":"#6B7684",
+        boxShadow:!sel?"0 2px 8px rgba(25,31,40,0.15)":"0 1px 3px rgba(0,0,0,0.06)",
+        transition:"all 0.2s"
+      }},"전체"),
+      habits.map(function(x){
+        var c=PALETTE[x.ci],isA=sel===x.id;
+        var nx=getNext(x),avail=!nx||diff(todayStr,nx)<=0;
+        return h('button',{key:x.id,onClick:function(){setSel(isA?null:x.id)},style:{
+          display:"flex",alignItems:"center",gap:6,padding:"8px 16px",borderRadius:24,border:"none",cursor:"pointer",whiteSpace:"nowrap",fontSize:13,fontWeight:600,fontFamily:"inherit",
+          background:isA?c.light:white,color:isA?c.text:g3,
+          boxShadow:isA?"0 2px 8px "+c.lock+"66":"0 1px 3px rgba(0,0,0,0.06)",
+          transition:"all 0.2s"
+        }},
+          h('span',{style:{fontSize:16,lineHeight:1}},x.icon),
+          x.name,
+          !avail?h('span',{style:{width:6,height:6,borderRadius:3,background:c.bg,marginLeft:2,display:"inline-block"}}):null
+        )
+      })
+    )
+  );
+
+  // -- Calendar --
+  var calNav=h('div',{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20,padding:"0 4px"}},
+    h('button',{onClick:prevM,style:{width:36,height:36,borderRadius:18,background:"transparent",border:"none",color:g4,fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}},"‹"),
+    h('button',{onClick:goToday,style:{fontSize:16,fontWeight:700,color:g1,background:"none",border:"none",cursor:"pointer",fontFamily:"inherit",letterSpacing:"-0.3px"}},cY+"년 "+(cM+1)+"월"),
+    h('button',{onClick:nextM,style:{width:36,height:36,borderRadius:18,background:"transparent",border:"none",color:g4,fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}},"›")
+  );
+
+  var calHeaders=h('div',{style:{display:"grid",gridTemplateColumns:"repeat(7,1fr)",marginBottom:8}},
+    DAYS_KR.map(function(d,i){return h('div',{key:d,style:{textAlign:"center",fontSize:11,fontWeight:600,color:i===0?"#F04452":i===6?"#3182F6":g5,padding:"4px 0"}},d)})
+  );
+
+  var calGrid=h('div',{style:{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:4}},
+    cells.map(function(day,idx){
+      if(day===null)return h('div',{key:"e"+idx,style:{aspectRatio:"1"}});
+      var ds=fmt(cY,cM,day),isT=ds===todayStr,dow=(fd+day-1)%7;
+      var content=null,bg="transparent",border="none",opacity=1;
+
+      if(aH){
+        var logged=aH.logs.indexOf(ds)!==-1,locked=!!aLk[ds];
+        if(logged){bg=aC.bg;content=h('span',{style:{fontSize:14}},aH.icon)}
+        else if(locked){bg=aC.light;border="1.5px dashed "+aC.lock;content=h('span',{style:{fontSize:9,color:aC.lock}},"잠금")}
+      }else{
+        var dots=allD.filter(function(x){return x.logs.indexOf(ds)!==-1});
+        var locks=allD.filter(function(x){return x.logs.indexOf(ds)===-1&&x.lk[ds]});
+        if(dots.length>0)content=h('div',{style:{display:"flex",gap:2,justifyContent:"center"}},dots.slice(0,3).map(function(x){return h('span',{key:x.id,style:{fontSize:10}},x.icon)}));
+        else if(locks.length>0)content=h('div',{style:{display:"flex",gap:3,justifyContent:"center"}},locks.slice(0,3).map(function(x){return h('span',{key:x.id,style:{width:5,height:5,borderRadius:3,background:x.c.lock,display:"inline-block"}})}));
+      }
+
+      var txtC=content&&aH&&aH.logs.indexOf(ds)!==-1?"#FFF":isT?g1:dow===0?"#F04452":dow===6?"#3182F6":g2;
+      return h('button',{key:day,onClick:function(){if(aH)toggleLog(aH.id,ds)},style:{
+        aspectRatio:"1",borderRadius:16,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
+        background:bg,border:border,cursor:aH?"pointer":"default",position:"relative",fontFamily:"inherit",gap:1,
+        transition:"all 0.15s"
+      }},
+        h('span',{style:{fontSize:12,fontWeight:isT?700:500,color:txtC}},day),
+        content?h('div',{style:{lineHeight:1}},content):null,
+        isT&&!content?h('div',{style:{position:"absolute",bottom:6,width:4,height:4,borderRadius:2,background:"#3182F6"}}):null
+      )
+    })
+  );
+
+  var calendar=h('div',{style:{margin:"0 16px 16px",padding:20,background:white,borderRadius:24,boxShadow:"0 2px 12px rgba(0,0,0,0.04)"}},calNav,calHeaders,calGrid);
+
+  // -- Habit Cards --
+  var cardList=(aH?[aH]:habits).map(function(x){
+    var c=PALETTE[x.ci],nx=getNext(x),avail=!nx||diff(todayStr,nx)<=0;
+    var left=nx?Math.max(0,diff(todayStr,nx)):0;
+    var mp=cY+"-"+String(cM+1).padStart(2,"0");
+    var mLogs=x.logs.filter(function(d){return d.indexOf(mp)===0}).length;
+
+    return h('div',{key:x.id,style:{padding:20,background:white,borderRadius:24,boxShadow:"0 2px 12px rgba(0,0,0,0.04)",animation:"fadeUp 0.3s ease"}},
+      h('div',{style:{display:"flex",justifyContent:"space-between",alignItems:"center"}},
+        h('div',{style:{display:"flex",alignItems:"center",gap:14}},
+          h('div',{style:{width:44,height:44,borderRadius:14,background:c.light,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20}},x.icon),
+          h('div',null,
+            h('div',{style:{fontSize:16,fontWeight:700,color:g1}},x.name),
+            h('div',{style:{fontSize:12,color:g4,marginTop:2}},x.cd+"일마다 1번 가능")
+          )
+        ),
+        h('div',{style:{display:"flex",gap:4}},
+          h('button',{onClick:function(){openEdit(x)},style:{width:32,height:32,borderRadius:10,background:g9,border:"none",cursor:"pointer",fontSize:13,display:"flex",alignItems:"center",justifyContent:"center"}},"✏️"),
+          h('button',{onClick:function(){setDelId(x.id)},style:{width:32,height:32,borderRadius:10,background:g9,border:"none",cursor:"pointer",fontSize:13,display:"flex",alignItems:"center",justifyContent:"center"}},"🗑")
+        )
+      ),
+      // Status
+      h('div',{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:16}},
+        h('div',{style:{
+          padding:"6px 14px",borderRadius:20,fontSize:13,fontWeight:600,
+          background:avail?"#E6F9F3":"#FFF0F1",color:avail?"#00B386":"#F04452"
+        }},avail?"✓ 가능":"D-"+left),
+        h('div',{style:{display:"flex",gap:16}},
+          h('div',{style:{textAlign:"center"}},
+            h('div',{style:{fontSize:18,fontWeight:700,color:c.text}},mLogs),
+            h('div',{style:{fontSize:11,color:g5}},"이번 달")
+          ),
+          h('div',{style:{textAlign:"center"}},
+            h('div',{style:{fontSize:18,fontWeight:700,color:g2}},x.logs.length),
+            h('div',{style:{fontSize:11,color:g5}},"누적")
+          )
+        )
+      ),
+      // Progress
+      !avail?h('div',{style:{marginTop:14,height:6,background:g8,borderRadius:3,overflow:"hidden"}},
+        h('div',{style:{height:"100%",borderRadius:3,background:"linear-gradient(90deg,"+c.bg+","+c.lock+")",width:((x.cd-left)/x.cd*100)+"%",transition:"width 0.4s ease"}})
+      ):null
+    )
+  });
+
+  var cards=h('div',{style:{padding:"0 16px 24px",display:"flex",flexDirection:"column",gap:12}},
+    cardList,
+    habits.length===0?h('div',{style:{textAlign:"center",padding:"60px 20px",animation:"fadeUp 0.4s ease"}},
+      h('div',{style:{fontSize:48,marginBottom:16}},"🎯"),
+      h('div',{style:{fontSize:16,fontWeight:600,color:g2,marginBottom:6}},"아직 등록된 습관이 없어요"),
+      h('div',{style:{fontSize:14,color:g4}},"위의 + 버튼을 눌러 추가해보세요")
+    ):null
+  );
+
+  // -- Modal builder --
+  function modal(content,onClose){
+    return h('div',{onClick:onClose,style:{position:"fixed",inset:0,background:"rgba(0,0,0,0.32)",backdropFilter:"blur(8px)",display:"flex",alignItems:"flex-end",justifyContent:"center",zIndex:100,padding:0}},
+      h('div',{onClick:function(ev){ev.stopPropagation()},style:{background:white,borderRadius:"28px 28px 0 0",padding:"32px 24px",paddingBottom:40,width:"100%",maxWidth:480,animation:"scaleIn 0.25s ease",maxHeight:"85vh",overflowY:"auto"}},content)
+    )
+  }
+
+  function iconPicker(selected,onSelect){
+    return h('div',{style:{display:"flex",flexWrap:"wrap",gap:8,marginBottom:24}},
+      ICONS.map(function(ic){return h('button',{key:ic,onClick:function(){onSelect(ic)},style:{
+        width:44,height:44,borderRadius:14,fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",border:"none",fontFamily:"inherit",
+        background:selected===ic?PALETTE[0].light:g9,
+        boxShadow:selected===ic?"0 0 0 2px "+PALETTE[0].bg:"none",
+        transition:"all 0.15s"
+      }},ic)})
+    )
+  }
+
+  function cdPicker(selected,onSelect){
+    return h('div',{style:{display:"flex",flexWrap:"wrap",gap:8,marginBottom:28}},
+      CD_OPTS.map(function(d){return h('button',{key:d,onClick:function(){onSelect(d)},style:{
+        padding:"8px 16px",borderRadius:12,fontSize:14,fontWeight:600,cursor:"pointer",border:"none",fontFamily:"inherit",
+        background:selected===d?"#191F28":g9,color:selected===d?white:g3,
+        transition:"all 0.15s"
+      }},d+"일")})
+    )
+  }
+
+  function inputField(val,onChange,placeholder,onEnter){
+    return h('input',{value:val,onChange:function(ev){onChange(ev.target.value)},placeholder:placeholder,onKeyDown:function(ev){if(ev.key==="Enter"&&onEnter)onEnter()},style:{
+      width:"100%",padding:"14px 16px",background:g9,border:"1.5px solid "+g7,borderRadius:16,color:g1,fontSize:15,outline:"none",marginBottom:24,fontFamily:"inherit"
+    }})
+  }
+
+  function modalBtns(cancelText,confirmText,onCancel,onConfirm,confirmBg,confirmColor,disabled){
+    return h('div',{style:{display:"flex",gap:10}},
+      h('button',{onClick:onCancel,style:{flex:1,padding:14,borderRadius:16,background:g9,border:"none",color:g3,fontSize:15,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}},cancelText),
+      h('button',{onClick:onConfirm,style:{flex:1,padding:14,borderRadius:16,background:confirmBg||"#3182F6",border:"none",color:confirmColor||white,fontSize:15,fontWeight:600,cursor:"pointer",fontFamily:"inherit",opacity:disabled?0.4:1}},confirmText)
+    )
+  }
+
+  function label(text){return h('div',{style:{fontSize:13,fontWeight:600,color:g3,marginBottom:10}},text)}
+
+  // -- Add Modal --
+  var addModal=showAdd?modal(
+    h('div',null,
+      h('div',{style:{fontSize:20,fontWeight:700,color:g1,marginBottom:24}},"새 습관 추가"),
+      label("아이콘"),iconPicker(ni,setNI),
+      label("이름"),inputField(nn,setNN,"예: 음주, 야식, SNS...",addHabit),
+      label("쿨다운 (며칠에 1번)"),cdPicker(nd,setND),
+      modalBtns("취소","추가하기",function(){setShowAdd(false)},addHabit,null,null,!nn.trim())
+    ),
+    function(){setShowAdd(false)}
+  ):null;
+
+  // -- Edit Modal --
+  var editModal=editId?modal(
+    h('div',null,
+      h('div',{style:{fontSize:20,fontWeight:700,color:g1,marginBottom:24}},"습관 수정"),
+      label("아이콘"),iconPicker(ei,setEI),
+      label("이름"),inputField(en,setEN,"",saveEdit),
+      label("쿨다운"),cdPicker(ed,setED),
+      modalBtns("취소","저장",function(){setEditId(null)},saveEdit)
+    ),
+    function(){setEditId(null)}
+  ):null;
+
+  // -- Delete Modal --
+  var deleteModal=delId?modal(
+    h('div',{style:{textAlign:"center"}},
+      h('div',{style:{fontSize:48,marginBottom:16}},"🗑"),
+      h('div',{style:{fontSize:18,fontWeight:700,color:g1,marginBottom:6}},"정말 삭제할까요?"),
+      h('div',{style:{fontSize:14,color:g4,marginBottom:28}},"모든 기록이 함께 사라져요"),
+      modalBtns("취소","삭제",function(){setDelId(null)},function(){delHabit(delId)},"#F04452",white)
+    ),
+    function(){setDelId(null)}
+  ):null;
+
+  var toastEl=toast?h('div',{style:{
+    position:"fixed",bottom:36,left:"50%",transform:"translateX(-50%)",
+    background:g1,color:white,padding:"12px 24px",borderRadius:20,fontSize:14,fontWeight:600,
+    zIndex:200,boxShadow:"0 8px 28px rgba(0,0,0,0.18)",whiteSpace:"nowrap",animation:"toast 0.25s ease"
+  }},toast):null;
+
+  return h('div',{style:{paddingBottom:40}},header,bullets,calendar,cards,addModal,editModal,deleteModal,toastEl)
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+};
+</script>
+</body>
+</html>
