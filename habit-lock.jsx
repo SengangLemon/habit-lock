@@ -959,3 +959,7 @@ const styles = {
     fontFamily: "'Noto Sans KR', sans-serif",
   },
 };
+// 파일 맨 밑에 이 코드가 있어야 화면에 렌더링됩니다.
+// 본인의 메인 컴포넌트 이름이 App이 맞는지 확인해 주세요!
+const root = ScroogeReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
