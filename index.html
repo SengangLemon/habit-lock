@@ -3,340 +3,612 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Habit Lock</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-    <style>
-        /* [디자인 시스템 변수 선언] */
-        :root {
-            --bg-page: #f8fafc;         /* 화사하고 깨끗한 배경 */
-            --bg-card: #ffffff;         /* 순백색 카드 배경 */
-            --text-main: #0f172a;       /* 가독성 높은 차콜 블랙 */
-            --text-sub: #64748b;        /* 감각적인 슬레이트 그레이 */
-            --primary-blue: #3b82f6;    /* 세련된 구글 시그니처 블루 */
-            --primary-hover: #2563eb;
-            --danger-red: #ef4444;      /* 경고 및 포기 버튼용 레드 */
-            --danger-hover: #dc2626;
-            --border-color: #e2e8f0;    /* 연하고 깔끔한 테두리 */
-        }
+    <title>HABIT LOCK</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
 
-        /* 기본 초기화 */
-        * {
-            box-sizing: border-box;
+    <style>
+        body {
             margin: 0;
             padding: 0;
-            font-family: 'Noto Sans KR', 'Montserrat', sans-serif;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        body {
-            background-color: var(--bg-page);
-            color: var(--text-main);
+            background: #050507;
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
             min-height: 100vh;
-            padding: 20px;
         }
-
-        /* -------------------------------------------------------------
-           기존 HTML 구조를 그대로 스타일링 (클래스 추가 없이 태그/ID로만 매핑)
-        ------------------------------------------------------------- */
-
-        /* 1. 메인 컨테이너 및 모달 내부의 흰색 카드 공통 스타일링 */
-        body > div:not([id$="Modal"]), 
-        div[id$="Modal"] > div {
-            background-color: var(--bg-card);
-            border-radius: 24px;
-            padding: 40px 30px;
+        #root {
             width: 100%;
-            max-width: 420px;
-            text-align: center;
-            box-shadow: 0 16px 36px rgba(148, 163, 184, 0.12);
-            border: 1px solid rgba(226, 232, 240, 0.8);
-        }
-
-        /* 타이틀 */
-        h1 {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--text-main);
-            margin-bottom: 6px;
-            letter-spacing: -0.5px;
-        }
-
-        /* 설명 텍스트 */
-        p {
-            font-size: 0.95rem;
-            color: var(--text-sub);
-            margin-bottom: 32px;
-            line-height: 1.5;
-        }
-
-        /* 2. 타이머 폰트 스타일 및 컬러 최적화 */
-        #timerDisplay {
-            font-family: 'Montserrat', sans-serif;
-            font-size: 4.5rem;
-            font-weight: 700;
-            color: var(--primary-blue);
-            margin: 24px 0 36px 0;
-            letter-spacing: -1px;
-        }
-
-        /* 3. 입력 폼 컴포넌트 세련되게 정돈 */
-        label {
-            display: block;
-            text-align: left;
-            font-size: 0.85rem;
-            font-weight: 700;
-            color: var(--text-main);
-            margin-bottom: 6px;
-        }
-
-        input[type="text"], select {
-            width: 100%;
-            padding: 14px 16px;
-            margin-bottom: 24px;
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            background-color: #f1f5f9;
-            color: var(--text-main);
-            font-size: 0.95rem;
-            transition: all 0.2s ease-in-out;
-        }
-
-        input[type="text"]:focus, select:focus {
-            outline: none;
-            border-color: var(--primary-blue);
-            background-color: #ffffff;
-            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
-        }
-
-        /* 4. 버튼 컴포넌트 (동일 높이와 둥글기로 통일감 부여) */
-        button {
-            width: 100%;
-            padding: 15px;
-            border: none;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.2s ease-in-out;
-            margin-bottom: 12px; /* 세로 배치 시 여백 조절 */
-        }
-
-        button:active {
-            transform: scale(0.98);
-        }
-
-        /* 버튼 컬러 세부 지정 */
-        #openSettingsBtn, #startTimerBtn {
-            background-color: var(--primary-blue);
-            color: #ffffff;
-            box-shadow: 0 4px 14px rgba(59, 130, 246, 0.2);
-            margin-bottom: 0;
-        }
-
-        #openSettingsBtn:hover, #startTimerBtn:hover {
-            background-color: var(--primary-hover);
-        }
-
-        #closeSettingsBtn, #closeConfirmBtn {
-            background-color: #f1f5f9;
-            color: var(--text-sub);
-            margin-top: 12px;
-            margin-bottom: 0;
-        }
-
-        #closeSettingsBtn:hover, #closeConfirmBtn:hover {
-            background-color: #e2e8f0;
-            color: var(--text-main);
-        }
-
-        #giveUpBtn, #finalGiveUpBtn {
-            background-color: var(--danger-red);
-            color: #ffffff;
-            box-shadow: 0 4px 14px rgba(239, 68, 68, 0.15);
-            margin-bottom: 0;
-        }
-
-        #giveUpBtn:hover, #finalGiveUpBtn:hover {
-            background-color: var(--danger-hover);
-        }
-
-        /* 벌칙 텍스트 강조 */
-        #penaltyConfirmText {
-            display: inline-block;
-            font-weight: 700;
-            color: var(--danger-red);
-            background-color: #fef2f2;
-            padding: 4px 10px;
-            border-radius: 8px;
-            margin-top: 8px;
-            border: 1px solid rgba(239, 68, 68, 0.1);
-        }
-
-        /* 5. 모달 오버레이 설정 (자바스크립트 내 style.display 제어 완벽 호환) */
-        div[id$="Modal"] {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(15, 23, 42, 0.2); /* 은은한 딤 처리 */
-            backdrop-filter: blur(4px);             /* 뒤 배경을 고급스럽게 블러 처리 */
-            display: none;                          /* JS 컨트롤 기본값 */
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            padding: 20px;
-        }
-
-        /* 모달 활성화 시 부드러운 등장 애니메이션 */
-        div[id$="Modal"] > div {
-            text-align: left; /* 설정 모달 내부 정렬은 왼쪽으로 차분하게 변경 */
-            animation: modalFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        @keyframes modalFadeIn {
-            from { transform: translateY(10px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+            max-width: 480px;
+            background: #0B0B0E;
+            min-height: 100vh;
+            box-sizing: border-box;
         }
     </style>
 </head>
 <body>
 
-    <div>
-        <h1>Habit Lock</h1>
-        <p>나쁜 습관을 잠그고 시간에 몰입하세요</p>
-        
-        <div id="timerDisplay">25:00</div>
-        
-        <button id="openSettingsBtn">습관 잠금 시작하기</button>
-        <button id="giveUpBtn" style="display: none;">포기하기</button>
-    </div>
-
-    <div id="settingsModal">
-        <div>
-            <h1>습관 잠금 설정</h1>
-            <p>포기할 때 치를 대가와 제한 시간을 설정해 주세요.</p>
-            
-            <label>나쁜 습관 (또는 벌칙)</label>
-            <input type="text" id="penaltyInput" placeholder="예: 유튜브 쇼츠 보기, 꿀밤 대가">
-            
-            <label>제한 시간</label>
-            <select id="timeSelect">
-                <option value="10">10분</option>
-                <option value="25" selected>25분</option>
-                <option value="50">50분</option>
-                <option value="60">1시간</option>
-            </select>
-            
-            <button id="startTimerBtn">잠금 시작</button>
-            <button id="closeSettingsBtn">취소</button>
-        </div>
-    </div>
-
-    <div id="confirmModal">
-        <div>
-            <h1>정말 포기하시겠습니까?</h1>
-            <p>지금 포기하시면 설정하신 대가를 치러야 합니다:<br>
-               <span id="penaltyConfirmText"></span>
-            </p>
-            <button id="finalGiveUpBtn">포기하기</button>
-            <button id="closeConfirmBtn">계속 진행</button>
-        </div>
-    </div>
+    <div id="root"></div>
 
     <script>
-        const openSettingsBtn = document.getElementById('openSettingsBtn');
-        const closeSettingsBtn = document.getElementById('closeSettingsBtn');
-        const startTimerBtn = document.getElementById('startTimerBtn');
-        const giveUpBtn = document.getElementById('giveUpBtn');
-        const closeConfirmBtn = document.getElementById('closeConfirmBtn');
-        const finalGiveUpBtn = document.getElementById('finalGiveUpBtn');
+    window.onload = function() {
+        if (typeof React === 'undefined') {
+            document.getElementById('root').innerHTML = '<p style="color:white;text-align:center;padding:40px;font-family:sans-serif;">React 로딩 실패 — 인터넷 연결을 확인하세요.</p>';
+            return;
+        }
+        const { useState, useEffect } = React;
+        const e = React.createElement;
 
-        const settingsModal = document.getElementById('settingsModal');
-        const confirmModal = document.getElementById('confirmModal');
-        
-        const timerDisplay = document.getElementById('timerDisplay');
-        const penaltyInput = document.getElementById('penaltyInput');
-        const timeSelect = document.getElementById('timeSelect');
-        const penaltyConfirmText = document.getElementById('penaltyConfirmText');
+        const COLORS = [
+          { bg: "#FF6B6B", light: "rgba(255,107,107,0.1)", border: "rgba(255,107,107,0.2)", text: "#FF8E8E" },
+          { bg: "#4ECDC4", light: "rgba(78,205,196,0.1)", border: "rgba(78,205,196,0.2)", text: "#6EE7E0" },
+          { bg: "#ECD06F", light: "rgba(236,208,111,0.1)", border: "rgba(236,208,111,0.2)", text: "#F4E1A2" },
+          { bg: "#A78BFA", light: "rgba(167,139,250,0.1)", border: "rgba(167,139,250,0.2)", text: "#C4B5FD" },
+          { bg: "#F97316", light: "rgba(249,115,22,0.1)", border: "rgba(249,115,22,0.2)", text: "#FB923C" },
+          { bg: "#06B6D4", light: "rgba(6,182,212,0.1)", border: "rgba(6,182,212,0.2)", text: "#22D3EE" },
+          { bg: "#EC4899", light: "rgba(236,72,153,0.1)", border: "rgba(236,72,153,0.2)", text: "#F472B6" },
+          { bg: "#84CC16", light: "rgba(132,204,22,0.1)", border: "rgba(132,204,22,0.2)", text: "#A3E635" }
+        ];
 
-        let countdown;
-        let timeLeft;
-        let isRunning = false;
+        const ICONS = ["🍺", "🚬", "🍔", "📱", "🎮", "☕", "🍫", "🛒", "💳", "🍕", "🎰", "🧁", "🥤", "📺", "🛋️"];
+        const DAYS_KR = ["일", "월", "화", "수", "목", "금", "토"];
+        const COOLDOWN_OPTIONS = [2, 3, 4, 5, 7, 10, 14, 30];
 
-        // 설정창 열기
-        openSettingsBtn.addEventListener('click', () => {
-            settingsModal.style.display = 'flex';
-        });
+        function formatDate(y, m, d) {
+          return y + "-" + String(m + 1).padStart(2, "0") + "-" + String(d).padStart(2, "0");
+        }
 
-        // 설정창 닫기
-        closeSettingsBtn.addEventListener('click', () => {
-            settingsModal.style.display = 'none';
-        });
+        function parseDate(str) {
+          var parts = str.split("-").map(Number);
+          return new Date(parts[0], parts[1] - 1, parts[2]);
+        }
 
-        // 타이머 시작
-        startTimerBtn.addEventListener('click', () => {
-            const minutes = parseInt(timeSelect.value);
-            timeLeft = minutes * 60;
-            updateDisplay(timeLeft);
-            settingsModal.style.display = 'none';
-            
-            openSettingsBtn.style.display = 'none';
-            giveUpBtn.style.display = 'block';
-            
-            startTimer();
-        });
+        function daysBetween(d1Str, d2Str) {
+          var d1 = parseDate(d1Str);
+          var d2 = parseDate(d2Str);
+          return Math.floor((d2 - d1) / (1000 * 60 * 60 * 24));
+        }
 
-        // 포기 확인창 열기
-        giveUpBtn.addEventListener('click', () => {
-            penaltyConfirmText.textContent = penaltyInput.value || "설정된 대가가 없습니다.";
-            confirmModal.style.display = 'flex';
-        });
+        function getDaysInMonth(y, m) {
+          return new Date(y, m + 1, 0).getDate();
+        }
 
-        // 포기 취소 (계속 진행)
-        closeConfirmBtn.addEventListener('click', () => {
-            confirmModal.style.display = 'none';
-        });
+        function getFirstDayOfMonth(y, m) {
+          return new Date(y, m, 1).getDay();
+        }
 
-        // 최종 포기
-        finalGiveUpBtn.addEventListener('click', () => {
-            clearInterval(countdown);
-            isRunning = false;
-            timerDisplay.textContent = "25:00";
-            
-            confirmModal.style.display = 'none';
-            openSettingsBtn.style.display = 'block';
-            giveUpBtn.style.display = 'none';
-        });
+        function HabitLockApp() {
+          var _useState = useState([]), habits = _useState[0], setHabits = _useState[1];
+          var _cm = useState(new Date().getMonth()), currentMonth = _cm[0], setCurrentMonth = _cm[1];
+          var _cy = useState(new Date().getFullYear()), currentYear = _cy[0], setCurrentYear = _cy[1];
+          var _sh = useState(null), selectedHabit = _sh[0], setSelectedHabit = _sh[1];
+          var _sam = useState(false), showAddModal = _sam[0], setShowAddModal = _sam[1];
+          var _nhn = useState(""), newHabitName = _nhn[0], setNewHabitName = _nhn[1];
+          var _nhd = useState(4), newHabitDays = _nhd[0], setNewHabitDays = _nhd[1];
+          var _nhi = useState("🍺"), newHabitIcon = _nhi[0], setNewHabitIcon = _nhi[1];
+          var _ld = useState(false), loaded = _ld[0], setLoaded = _ld[1];
+          var _ts = useState(null), toast = _ts[0], setToast = _ts[1];
+          var _cd = useState(null), confirmDelete = _cd[0], setConfirmDelete = _cd[1];
+          var _sem = useState(null), showEditModal = _sem[0], setShowEditModal = _sem[1];
+          var _en = useState(""), editName = _en[0], setEditName = _en[1];
+          var _ed = useState(4), editDays = _ed[0], setEditDays = _ed[1];
+          var _ei = useState(""), editIcon = _ei[0], setEditIcon = _ei[1];
+          var _ud = useState(null), undoData = _ud[0], setUndoData = _ud[1];
 
-        function startTimer() {
-            if (isRunning) return;
-            isRunning = true;
+          useEffect(function() {
+            try {
+              var savedData = localStorage.getItem("habit-lock-data");
+              if (savedData) setHabits(JSON.parse(savedData));
+            } catch (err) { console.error(err); }
+            setLoaded(true);
+          }, []);
 
-            countdown = setInterval(() => {
-                timeLeft--;
-                updateDisplay(timeLeft);
+          useEffect(function() {
+            if (!loaded) return;
+            try {
+              localStorage.setItem("habit-lock-data", JSON.stringify(habits));
+            } catch (err) { console.error(err); }
+          }, [habits, loaded]);
 
-                if (timeLeft <= 0) {
-                    clearInterval(countdown);
-                    isRunning = false;
-                    alert("성공했습니다! 나쁜 습관을 이겨내셨군요.");
-                    openSettingsBtn.style.display = 'block';
-                    giveUpBtn.style.display = 'none';
+          useEffect(function() {
+            if (toast) {
+              var t = setTimeout(function() { setToast(null); }, 2800);
+              return function() { clearTimeout(t); };
+            }
+          }, [toast]);
+
+          useEffect(function() {
+            if (undoData) {
+              var t = setTimeout(function() { setUndoData(null); }, 5000);
+              return function() { clearTimeout(t); };
+            }
+          }, [undoData]);
+
+          var now = new Date();
+          var todayStr = formatDate(now.getFullYear(), now.getMonth(), now.getDate());
+
+          var addHabit = function() {
+            if (!newHabitName.trim()) return;
+            var colorIdx = habits.length % COLORS.length;
+            setHabits(function(prev) {
+              return prev.concat([{
+                id: Date.now().toString(),
+                name: newHabitName.trim(),
+                cooldown: newHabitDays,
+                icon: newHabitIcon,
+                color: colorIdx,
+                logs: []
+              }]);
+            });
+            setNewHabitName("");
+            setNewHabitDays(4);
+            setNewHabitIcon("🍺");
+            setShowAddModal(false);
+            setToast("습관이 추가되었습니다");
+          };
+
+          var deleteHabit = function(id) {
+            setHabits(function(prev) { return prev.filter(function(h) { return h.id !== id; }); });
+            if (selectedHabit === id) setSelectedHabit(null);
+            setConfirmDelete(null);
+            setToast("삭제되었습니다");
+          };
+
+          var toggleLog = function(habitId, dateStr) {
+            setHabits(function(prev) {
+              return prev.map(function(h) {
+                if (h.id !== habitId) return h;
+                var existing = h.logs.indexOf(dateStr) !== -1;
+                if (existing) {
+                  setUndoData({ habitId: habitId, dateStr: dateStr, action: "remove" });
+                  return Object.assign({}, h, { logs: h.logs.filter(function(d) { return d !== dateStr; }) });
                 }
-            }, 1000);
+                var isLocked = h.logs.some(function(logDate) {
+                  var diff = daysBetween(logDate, dateStr);
+                  return diff > 0 && diff < h.cooldown;
+                });
+                if (isLocked) {
+                  setToast("🔒 아직 쿨다운 기간입니다!");
+                  return h;
+                }
+                setUndoData({ habitId: habitId, dateStr: dateStr, action: "add" });
+                return Object.assign({}, h, { logs: h.logs.concat([dateStr]).sort() });
+              });
+            });
+          };
+
+          var handleUndo = function() {
+            if (!undoData) return;
+            setHabits(function(prev) {
+              return prev.map(function(h) {
+                if (h.id !== undoData.habitId) return h;
+                if (undoData.action === "add") {
+                  return Object.assign({}, h, { logs: h.logs.filter(function(d) { return d !== undoData.dateStr; }) });
+                } else {
+                  return Object.assign({}, h, { logs: h.logs.concat([undoData.dateStr]).sort() });
+                }
+              });
+            });
+            setUndoData(null);
+            setToast("되돌렸습니다");
+          };
+
+          var getLockedDates = function(habit) {
+            var locked = {};
+            habit.logs.forEach(function(logDate) {
+              for (var i = 1; i < habit.cooldown; i++) {
+                var d = parseDate(logDate);
+                d.setDate(d.getDate() + i);
+                locked[formatDate(d.getFullYear(), d.getMonth(), d.getDate())] = true;
+              }
+            });
+            return locked;
+          };
+
+          var getNextAvailable = function(habit) {
+            if (habit.logs.length === 0) return null;
+            var lastLog = habit.logs[habit.logs.length - 1];
+            var d = parseDate(lastLog);
+            d.setDate(d.getDate() + habit.cooldown);
+            return formatDate(d.getFullYear(), d.getMonth(), d.getDate());
+          };
+
+          var prevMonth = function() {
+            if (currentMonth === 0) { setCurrentMonth(11); setCurrentYear(function(y) { return y - 1; }); }
+            else setCurrentMonth(function(m) { return m - 1; });
+          };
+
+          var nextMonth = function() {
+            if (currentMonth === 11) { setCurrentMonth(0); setCurrentYear(function(y) { return y + 1; }); }
+            else setCurrentMonth(function(m) { return m + 1; });
+          };
+
+          var goToday = function() {
+            setCurrentMonth(new Date().getMonth());
+            setCurrentYear(new Date().getFullYear());
+          };
+
+          var saveEdit = function() {
+            if (!editName.trim() || !showEditModal) return;
+            setHabits(function(prev) {
+              return prev.map(function(h) {
+                if (h.id !== showEditModal) return h;
+                return Object.assign({}, h, { name: editName.trim(), cooldown: editDays, icon: editIcon });
+              });
+            });
+            setShowEditModal(null);
+            setToast("수정되었습니다");
+          };
+
+          var openEdit = function(habit) {
+            setEditName(habit.name);
+            setEditDays(habit.cooldown);
+            setEditIcon(habit.icon);
+            setShowEditModal(habit.id);
+          };
+
+          var daysInMonth = getDaysInMonth(currentYear, currentMonth);
+          var firstDay = getFirstDayOfMonth(currentYear, currentMonth);
+
+          var activeHabit = habits.find(function(h) { return h.id === selectedHabit; }) || null;
+          var lockedDates = activeHabit ? getLockedDates(activeHabit) : {};
+          var activeColor = activeHabit ? COLORS[activeHabit.color] : null;
+
+          var allHabitsData = selectedHabit ? [] : habits.map(function(h) {
+            return Object.assign({}, h, { locked: getLockedDates(h), c: COLORS[h.color] });
+          });
+
+          var calendarCells = [];
+          for (var i = 0; i < firstDay; i++) calendarCells.push(null);
+          for (var d = 1; d <= daysInMonth; d++) calendarCells.push(d);
+
+          var S = {
+            container: { background: "#0B0B0E", minHeight: "100vh", color: "#ffffff", paddingBottom: 60, maxWidth: 480, margin: "0 auto", position: "relative" },
+            header: { padding: "36px 24px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" },
+            title: { fontSize: 20, fontWeight: 700, letterSpacing: "1.5px", color: "#ffffff", margin: 0 },
+            subtitle: { fontSize: 11, color: "rgba(255,255,255,0.3)", marginTop: 4, fontWeight: 400 },
+            addBtn: { width: 38, height: 38, borderRadius: "50%", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", color: "#ffffff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 },
+            bulletsContainer: { padding: "0 24px 16px", overflowX: "auto" },
+            bulletsScroll: { display: "flex", gap: 6 },
+            bulletChip: { display: "flex", alignItems: "center", padding: "7px 14px", borderRadius: 18, cursor: "pointer", whiteSpace: "nowrap", fontSize: 12, fontWeight: 500, position: "relative", border: "none", fontFamily: "inherit" },
+            calendarCard: { margin: "0 16px 20px", padding: "20px 12px", background: "rgba(255,255,255,0.02)", borderRadius: 20, border: "1px solid rgba(255,255,255,0.03)" },
+            calendarNav: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, padding: "0 8px" },
+            navBtn: { width: 32, height: 32, background: "transparent", border: "none", color: "rgba(255,255,255,0.3)", fontSize: 22, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" },
+            monthLabel: { fontSize: 15, fontWeight: 600, color: "#ffffff", background: "none", border: "none", cursor: "pointer", letterSpacing: "0.5px", fontFamily: "inherit" },
+            dayHeaders: { display: "grid", gridTemplateColumns: "repeat(7, 1fr)", marginBottom: 10 },
+            dayHeader: { textAlign: "center", fontSize: 10, fontWeight: 500 },
+            calendarGrid: { display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "5px" },
+            emptyCell: { aspectRatio: "1" },
+            dayCell: { aspectRatio: "1", borderRadius: 12, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative", padding: 0, fontFamily: "inherit" },
+            cardsSection: { padding: "0 16px", display: "flex", flexDirection: "column", gap: 10 },
+            habitCard: { padding: 18, background: "rgba(255,255,255,0.02)", borderRadius: 20, border: "1px solid rgba(255,255,255,0.03)" },
+            habitCardTop: { display: "flex", justifyContent: "space-between", alignItems: "center" },
+            cardIconBox: { width: 36, height: 36, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 },
+            statusRow: { display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 16 },
+            statusBadge: { padding: "4px 10px", borderRadius: 6, fontSize: 11, fontWeight: 500 },
+            progressContainer: { marginTop: 14, height: 2, background: "rgba(255,255,255,0.03)", borderRadius: 1, overflow: "hidden" },
+            overlay: { position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(16px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: 24 },
+            modal: { background: "#121217", borderRadius: 24, padding: 24, width: "100%", maxWidth: 360, border: "1px solid rgba(255,255,255,0.06)" },
+            modalTitle: { fontSize: 16, fontWeight: 600, marginBottom: 20, marginTop: 0, color: "#ffffff" },
+            label: { display: "block", fontSize: 11, color: "rgba(255,255,255,0.3)", marginBottom: 8, fontWeight: 500 },
+            iconGrid: { display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 18 },
+            iconBtn: { width: 36, height: 36, borderRadius: 8, fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" },
+            input: { width: "100%", padding: "10px 14px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 10, color: "#ffffff", fontSize: 13, outline: "none", marginBottom: 18, boxSizing: "border-box", fontFamily: "inherit" },
+            daysSelector: { display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 24 },
+            dayOption: { padding: "6px 12px", borderRadius: 8, fontSize: 12, cursor: "pointer", fontWeight: 500, border: "none", fontFamily: "inherit" },
+            modalActions: { display: "flex", gap: 8 },
+            cancelBtn: { flex: 1, padding: 10, borderRadius: 10, background: "transparent", border: "1px solid rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.4)", fontSize: 13, cursor: "pointer", fontFamily: "inherit" },
+            confirmBtn: { flex: 1, padding: 10, borderRadius: 10, background: "#4ECDC4", border: "none", color: "#0B0B0E", fontSize: 13, cursor: "pointer", fontWeight: 600, fontFamily: "inherit" },
+            toast: { position: "fixed", bottom: 40, left: "50%", transform: "translateX(-50%)", background: "#ffffff", color: "#050507", padding: "8px 18px", borderRadius: 20, fontSize: 12, fontWeight: 500, zIndex: 200, boxShadow: "0 8px 24px rgba(0,0,0,0.4)", whiteSpace: "nowrap" },
+            undoBar: { position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)", background: "#121217", border: "1px solid rgba(255,255,255,0.08)", padding: "10px 14px", borderRadius: 14, display: "flex", alignItems: "center", gap: 12, zIndex: 200, color: "rgba(255,255,255,0.6)", fontSize: 12, whiteSpace: "nowrap" },
+            undoBtn: { background: "rgba(78,205,196,0.1)", border: "1px solid rgba(78,205,196,0.2)", color: "#4ECDC4", padding: "4px 10px", borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }
+          };
+
+          // === HEADER ===
+          var headerEl = e('div', { style: S.header },
+            e('div', null,
+              e('h1', { style: S.title }, 'HABIT LOCK'),
+              e('p', { style: S.subtitle }, '인터벌 중심의 절제 기록 인터페이스')
+            ),
+            e('button', { onClick: function() { setShowAddModal(true); }, style: S.addBtn }, '＋')
+          );
+
+          // === BULLETS ===
+          var bulletEls = [
+            e('button', {
+              key: 'all',
+              onClick: function() { setSelectedHabit(null); },
+              style: Object.assign({}, S.bulletChip, {
+                background: !selectedHabit ? "rgba(255,255,255,0.08)" : "transparent",
+                color: !selectedHabit ? "#ffffff" : "rgba(255,255,255,0.4)",
+                border: !selectedHabit ? "1px solid rgba(255,255,255,0.12)" : "1px solid rgba(255,255,255,0.04)"
+              })
+            }, '📋 전체')
+          ].concat(habits.map(function(h) {
+            var c = COLORS[h.color];
+            var isActive = selectedHabit === h.id;
+            var nextDate = getNextAvailable(h);
+            var isAvailable = !nextDate || daysBetween(todayStr, nextDate) <= 0;
+            return e('button', {
+              key: h.id,
+              onClick: function() { setSelectedHabit(isActive ? null : h.id); },
+              style: Object.assign({}, S.bulletChip, {
+                background: isActive ? c.light : "transparent",
+                color: isActive ? c.text : "rgba(255,255,255,0.4)",
+                border: isActive ? "1px solid " + c.border : "1px solid rgba(255,255,255,0.04)"
+              })
+            },
+              h.icon + ' ' + h.name,
+              !isAvailable ? e('span', { style: { width: 5, height: 5, borderRadius: "50%", marginLeft: 5, background: c.bg, display: "inline-block" } }) : null
+            );
+          }));
+
+          var bulletsEl = e('div', { style: S.bulletsContainer },
+            e('div', { style: S.bulletsScroll }, bulletEls)
+          );
+
+          // === CALENDAR ===
+          var calNavEl = e('div', { style: S.calendarNav },
+            e('button', { onClick: prevMonth, style: S.navBtn }, '‹'),
+            e('button', { onClick: goToday, style: S.monthLabel }, currentYear + '. ' + String(currentMonth + 1).padStart(2, '0')),
+            e('button', { onClick: nextMonth, style: S.navBtn }, '›')
+          );
+
+          var calHeaderEl = e('div', { style: S.dayHeaders },
+            DAYS_KR.map(function(d, i) {
+              return e('div', {
+                key: d,
+                style: Object.assign({}, S.dayHeader, {
+                  color: i === 0 ? "rgba(255,107,107,0.5)" : i === 6 ? "rgba(78,205,196,0.5)" : "rgba(255,255,255,0.2)"
+                })
+              }, d);
+            })
+          );
+
+          var gridCells = calendarCells.map(function(day, idx) {
+            if (day === null) return e('div', { key: 'e-' + idx, style: S.emptyCell });
+
+            var dateStr = formatDate(currentYear, currentMonth, day);
+            var isToday = dateStr === todayStr;
+            var dayOfWeek = (firstDay + day - 1) % 7;
+
+            var cellContent = null;
+            var cellBg = "rgba(255,255,255,0.01)";
+            var cellBorder = "1px solid transparent";
+
+            if (activeHabit) {
+              var isLogged = activeHabit.logs.indexOf(dateStr) !== -1;
+              var isLocked = !!lockedDates[dateStr];
+
+              if (isLogged) {
+                cellBg = activeColor.bg;
+                cellContent = e('span', { style: { fontSize: 15 } }, activeHabit.icon);
+              } else if (isLocked) {
+                cellBg = "rgba(255,255,255,0.02)";
+                cellBorder = "1px dashed " + activeColor.border;
+                cellContent = e('span', { style: { fontSize: 10, color: activeColor.text, opacity: 0.6 } }, '🔒');
+              }
+            } else {
+              var dots = allHabitsData.filter(function(h) { return h.logs.indexOf(dateStr) !== -1; });
+              var locks = allHabitsData.filter(function(h) { return h.logs.indexOf(dateStr) === -1 && h.locked[dateStr]; });
+              if (dots.length > 0) {
+                cellContent = e('div', { style: { display: "flex", gap: 1, justifyContent: "center", transform: "scale(0.85)" } },
+                  dots.slice(0, 4).map(function(h) { return e('span', { key: h.id, style: { fontSize: 9 } }, h.icon); })
+                );
+              } else if (locks.length > 0) {
+                cellContent = e('div', { style: { display: "flex", gap: 2, justifyContent: "center", marginTop: 2 } },
+                  locks.slice(0, 3).map(function(h) { return e('span', { key: h.id, style: { width: 4, height: 4, borderRadius: "50%", background: h.c.bg, opacity: 0.4, display: "inline-block" } }); })
+                );
+              }
+            }
+
+            var textColor = (cellContent && activeHabit) ? "#000000" : isToday ? "#ffffff" : dayOfWeek === 0 ? "rgba(255,107,107,0.6)" : dayOfWeek === 6 ? "rgba(78,205,196,0.6)" : "rgba(255,255,255,0.4)";
+
+            return e('button', {
+              key: day,
+              onClick: function() { if (activeHabit) toggleLog(activeHabit.id, dateStr); },
+              style: Object.assign({}, S.dayCell, { background: cellBg, border: cellBorder, cursor: activeHabit ? "pointer" : "default" })
+            },
+              e('span', { style: { fontSize: 11, fontWeight: isToday ? 700 : 400, color: textColor } }, day),
+              cellContent ? e('div', { style: { marginTop: 2, display: "flex", justifyContent: "center" } }, cellContent) : null,
+              (isToday && !cellContent) ? e('div', { style: { position: "absolute", bottom: 4, width: 3, height: 3, borderRadius: "50%", background: "rgba(255,255,255,0.4)" } }) : null
+            );
+          });
+
+          var calendarEl = e('div', { style: S.calendarCard },
+            calNavEl,
+            calHeaderEl,
+            e('div', { style: S.calendarGrid }, gridCells)
+          );
+
+          // === HABIT CARDS ===
+          var habitsList = activeHabit ? [activeHabit] : habits;
+          var cardsEls = habitsList.map(function(h) {
+            var c = COLORS[h.color];
+            var nextDate = getNextAvailable(h);
+            var isAvailable = !nextDate || daysBetween(todayStr, nextDate) <= 0;
+            var daysLeft = nextDate ? Math.max(0, daysBetween(todayStr, nextDate)) : 0;
+            var totalLogs = h.logs.length;
+            var monthPrefix = currentYear + "-" + String(currentMonth + 1).padStart(2, "0");
+            var thisMonthLogs = h.logs.filter(function(d) { return d.indexOf(monthPrefix) === 0; }).length;
+
+            return e('div', { key: h.id, style: S.habitCard },
+              e('div', { style: S.habitCardTop },
+                e('div', { style: { display: "flex", alignItems: "center", gap: 12 } },
+                  e('div', { style: Object.assign({}, S.cardIconBox, { background: c.light, border: "1px solid " + c.border }) }, h.icon),
+                  e('div', null,
+                    e('div', { style: { fontSize: 14, fontWeight: 600, color: "#ffffff" } }, h.name),
+                    e('div', { style: { fontSize: 11, color: "rgba(255,255,255,0.3)", marginTop: 2 } }, h.cooldown + '일 간격 통제')
+                  )
+                ),
+                e('div', { style: { display: "flex", gap: 4 } },
+                  e('button', { onClick: function() { openEdit(h); }, style: { width: 28, height: 28, background: "transparent", border: "none", cursor: "pointer", fontSize: 12, opacity: 0.3 } }, '✏️'),
+                  e('button', { onClick: function() { setConfirmDelete(h.id); }, style: { width: 28, height: 28, background: "transparent", border: "none", cursor: "pointer", fontSize: 12, opacity: 0.3 } }, '🗑️')
+                )
+              ),
+              e('div', { style: S.statusRow },
+                e('div', {
+                  style: Object.assign({}, S.statusBadge, {
+                    background: isAvailable ? "rgba(78,205,196,0.06)" : "rgba(255,107,107,0.06)",
+                    color: isAvailable ? "#4ECDC4" : "#FF6B6B",
+                    border: isAvailable ? "1px solid rgba(78,205,196,0.15)" : "1px solid rgba(255,107,107,0.15)"
+                  })
+                }, isAvailable ? '기록 가능' : '잠금 해제까지 ' + daysLeft + '일'),
+                e('div', { style: { display: "flex", gap: 12 } },
+                  e('div', { style: { display: "flex", alignItems: "center", gap: 4, fontSize: 12 } },
+                    e('span', { style: { color: "rgba(255,255,255,0.25)", fontSize: 11 } }, '당월'),
+                    e('span', { style: { color: c.text, fontWeight: 600 } }, thisMonthLogs)
+                  ),
+                  e('div', { style: { display: "flex", alignItems: "center", gap: 4, fontSize: 12 } },
+                    e('span', { style: { color: "rgba(255,255,255,0.25)", fontSize: 11 } }, '누적'),
+                    e('span', { style: { color: "rgba(255,255,255,0.7)", fontWeight: 600 } }, totalLogs)
+                  )
+                )
+              ),
+              !isAvailable ? e('div', { style: S.progressContainer },
+                e('div', { style: { height: "100%", background: c.bg, width: ((h.cooldown - daysLeft) / h.cooldown * 100) + "%", transition: "width 0.4s ease" } })
+              ) : null
+            );
+          });
+
+          var cardsSection = e('div', { style: S.cardsSection },
+            cardsEls,
+            habits.length === 0 ? e('div', { style: { textAlign: "center", padding: "40px 20px" } },
+              e('p', { style: { fontSize: 24, marginBottom: 8 } }, '⚡'),
+              e('p', { style: { color: "rgba(255,255,255,0.3)", fontSize: 13 } }, '상단의 버튼을 눌러 통제 리스트를 개설하세요.')
+            ) : null
+          );
+
+          // === ADD MODAL ===
+          var addModalEl = showAddModal ? e('div', { style: S.overlay, onClick: function() { setShowAddModal(false); } },
+            e('div', { style: S.modal, onClick: function(ev) { ev.stopPropagation(); } },
+              e('h2', { style: S.modalTitle }, '새로운 통제 생성'),
+              e('label', { style: S.label }, '상징 아이콘'),
+              e('div', { style: S.iconGrid },
+                ICONS.map(function(ic) {
+                  return e('button', {
+                    key: ic,
+                    onClick: function() { setNewHabitIcon(ic); },
+                    style: Object.assign({}, S.iconBtn, {
+                      background: newHabitIcon === ic ? "rgba(255,255,255,0.08)" : "transparent",
+                      border: newHabitIcon === ic ? "1px solid rgba(255,255,255,0.2)" : "1px solid rgba(255,255,255,0.03)"
+                    })
+                  }, ic);
+                })
+              ),
+              e('label', { style: S.label }, '통제 대상 이름'),
+              e('input', {
+                value: newHabitName,
+                onChange: function(ev) { setNewHabitName(ev.target.value); },
+                placeholder: "예: 음주, 야식, 모바일 게임",
+                style: S.input,
+                onKeyDown: function(ev) { if (ev.key === "Enter") addHabit(); }
+              }),
+              e('label', { style: S.label }, '필수 쿨다운 간격 설정'),
+              e('div', { style: S.daysSelector },
+                COOLDOWN_OPTIONS.map(function(d) {
+                  return e('button', {
+                    key: d,
+                    onClick: function() { setNewHabitDays(d); },
+                    style: Object.assign({}, S.dayOption, {
+                      background: newHabitDays === d ? "rgba(255,255,255,0.08)" : "transparent",
+                      border: newHabitDays === d ? "1px solid rgba(255,255,255,0.2)" : "1px solid rgba(255,255,255,0.03)",
+                      color: newHabitDays === d ? "#ffffff" : "rgba(255,255,255,0.4)"
+                    })
+                  }, d + '일');
+                })
+              ),
+              e('div', { style: S.modalActions },
+                e('button', { onClick: function() { setShowAddModal(false); }, style: S.cancelBtn }, '이전'),
+                e('button', { onClick: addHabit, style: Object.assign({}, S.confirmBtn, { opacity: newHabitName.trim() ? 1 : 0.3 }) }, '생성하기')
+              )
+            )
+          ) : null;
+
+          // === EDIT MODAL ===
+          var editModalEl = showEditModal ? e('div', { style: S.overlay, onClick: function() { setShowEditModal(null); } },
+            e('div', { style: S.modal, onClick: function(ev) { ev.stopPropagation(); } },
+              e('h2', { style: S.modalTitle }, '통제 설정 수정'),
+              e('label', { style: S.label }, '아이콘 교체'),
+              e('div', { style: S.iconGrid },
+                ICONS.map(function(ic) {
+                  return e('button', {
+                    key: ic,
+                    onClick: function() { setEditIcon(ic); },
+                    style: Object.assign({}, S.iconBtn, {
+                      background: editIcon === ic ? "rgba(255,255,255,0.08)" : "transparent",
+                      border: editIcon === ic ? "1px solid rgba(255,255,255,0.2)" : "1px solid rgba(255,255,255,0.03)"
+                    })
+                  }, ic);
+                })
+              ),
+              e('label', { style: S.label }, '이름 수정'),
+              e('input', { value: editName, onChange: function(ev) { setEditName(ev.target.value); }, style: S.input, onKeyDown: function(ev) { if (ev.key === "Enter") saveEdit(); } }),
+              e('label', { style: S.label }, '쿨다운 재지정'),
+              e('div', { style: S.daysSelector },
+                COOLDOWN_OPTIONS.map(function(d) {
+                  return e('button', {
+                    key: d,
+                    onClick: function() { setEditDays(d); },
+                    style: Object.assign({}, S.dayOption, {
+                      background: editDays === d ? "rgba(255,255,255,0.08)" : "transparent",
+                      border: editDays === d ? "1px solid rgba(255,255,255,0.2)" : "1px solid rgba(255,255,255,0.03)",
+                      color: editDays === d ? "#ffffff" : "rgba(255,255,255,0.4)"
+                    })
+                  }, d + '일');
+                })
+              ),
+              e('div', { style: S.modalActions },
+                e('button', { onClick: function() { setShowEditModal(null); }, style: S.cancelBtn }, '취소'),
+                e('button', { onClick: saveEdit, style: S.confirmBtn }, '적용')
+              )
+            )
+          ) : null;
+
+          // === DELETE CONFIRM ===
+          var deleteModalEl = confirmDelete ? e('div', { style: S.overlay, onClick: function() { setConfirmDelete(null); } },
+            e('div', { style: Object.assign({}, S.modal, { maxWidth: 300, textAlign: "center" }), onClick: function(ev) { ev.stopPropagation(); } },
+              e('p', { style: { color: "#ffffff", fontSize: 14, fontWeight: 500, marginBottom: 8 } }, '정말 삭제하시겠습니까?'),
+              e('p', { style: { color: "rgba(255,255,255,0.3)", fontSize: 12, marginBottom: 24 } }, '모든 기록이 함께 삭제됩니다.'),
+              e('div', { style: S.modalActions },
+                e('button', { onClick: function() { setConfirmDelete(null); }, style: S.cancelBtn }, '취소'),
+                e('button', { onClick: function() { deleteHabit(confirmDelete); }, style: Object.assign({}, S.confirmBtn, { background: "#E15252", color: "#ffffff" }) }, '삭제')
+              )
+            )
+          ) : null;
+
+          var toastEl = toast ? e('div', { style: S.toast }, toast) : null;
+          var undoEl = undoData ? e('div', { style: S.undoBar },
+            e('span', null, '기록이 변경되었습니다'),
+            e('button', { onClick: handleUndo, style: S.undoBtn }, '되돌리기')
+          ) : null;
+
+          // === GLOBAL STYLE ===
+          var styleEl = e('style', null,
+            "@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap');" +
+            "* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }" +
+            "body { font-family: 'Inter', 'Noto Sans KR', sans-serif; }" +
+            "::-webkit-scrollbar { display: none; }"
+          );
+
+          return e('div', { style: S.container },
+            styleEl,
+            headerEl,
+            bulletsEl,
+            calendarEl,
+            cardsSection,
+            addModalEl,
+            editModalEl,
+            deleteModalEl,
+            toastEl,
+            undoEl
+          );
         }
 
-        function updateDisplay(seconds) {
-            const min = String(Math.floor(seconds / 60)).padStart(2, '0');
-            const sec = String(seconds % 60).padStart(2, '0');
-            timerDisplay.textContent = `${min}:${sec}`;
-        }
+        var root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(React.createElement(HabitLockApp));
+    };
     </script>
 </body>
 </html>
