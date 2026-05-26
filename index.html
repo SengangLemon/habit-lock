@@ -6,19 +6,19 @@
     <title>Habit Lock</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        /* 기본 스타일 리셋 및 변수 설정 */
+        /* CSS만 화사하고 심플하게 전면 수정 */
         :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --text-main: #f8fafc;
-            --text-sub: #94a3b8;
-            --accent-purple: #8b5cf6;
-            --accent-blue: #3b82f6;
-            --accent-gradient: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-            --danger: #ef4444;
-            --border-color: #334155;
+            --bg-main: #f8fafc;        /* 화사한 메인 배경 */
+            --bg-card: #ffffff;        /* 깔끔한 화이트 카드 */
+            --text-main: #1e293b;      /* 깊이감 있는 차콜 (가독성) */
+            --text-sub: #64748b;       /* 부드러운 슬레이트 그레이 */
+            --accent-blue: #3b82f6;    /* 신뢰감을 주는 구글 블루 */
+            --accent-hover: #2563eb;
+            --danger-red: #ef4444;     /* 경고용 레드 */
+            --danger-hover: #dc2626;
+            --border-light: #e2e8f0;   /* 연한 구분선 */
         }
 
         * {
@@ -26,10 +26,11 @@
             margin: 0;
             padding: 0;
             font-family: 'Noto Sans KR', 'Montserrat', sans-serif;
+            -webkit-font-smoothing: antialiased;
         }
 
         body {
-            background-color: var(--bg-color);
+            background-color: var(--bg-main);
             color: var(--text-main);
             display: flex;
             justify-content: center;
@@ -38,257 +39,194 @@
             padding: 20px;
         }
 
-        /* 메인 컨테이너 */
-        .container {
-            background-color: var(--card-bg);
-            border-radius: 24px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-            width: 100%;
-            max-width: 480px;
-            padding: 40px 30px;
-            text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
+        /* 원래 있던 태그 스타일링 */
         h1 {
-            font-size: 2rem;
+            font-size: 1.8rem;
             font-weight: 700;
+            color: var(--text-main);
             margin-bottom: 8px;
-            background: var(--accent-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
             letter-spacing: -0.5px;
         }
 
-        .subtitle {
+        p {
             font-size: 0.95rem;
             color: var(--text-sub);
-            margin-bottom: 40px;
+            margin-bottom: 30px;
+            line-height: 1.5;
         }
 
-        /* 타이머 영역 */
-        .timer-display {
-            font-family: 'Montserrat', sans-serif;
-            font-size: 4.5rem;
-            font-weight: 700;
+        /* 입력 폼 요소 */
+        input[type="text"], select {
+            width: 100%;
+            padding: 12px 16px;
+            margin-top: 8px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-light);
+            border-radius: 12px;
+            background-color: #f1f5f9;
             color: var(--text-main);
-            margin-bottom: 40px;
-            letter-spacing: -1px;
-            text-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
         }
 
-        /* 버튼 스타일 공통 */
+        input[type="text"]:focus, select:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            background-color: #ffffff;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        /* 버튼 기본 정의 */
         button {
-            cursor: pointer;
+            width: 100%;
+            padding: 14px;
             border: none;
-            border-radius: 14px;
-            font-weight: 600;
+            border-radius: 12px;
             font-size: 1rem;
-            transition: all 0.2s ease-in-out;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
         }
 
         button:active {
             transform: scale(0.98);
         }
 
-        .btn-primary {
-            width: 100%;
-            padding: 16px;
-            background: var(--accent-gradient);
+        /* 원본 ID 기반 스타일 매핑 (구조 절대 유지) */
+        #timerDisplay {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 4.5rem;
+            font-weight: 700;
+            color: var(--accent-blue);
+            margin: 30px 0;
+            letter-spacing: -1px;
+        }
+
+        #openSettingsBtn, #startTimerBtn {
+            background-color: var(--accent-blue);
             color: #ffffff;
-            box-shadow: 0 8px 20px rgba(139, 92, 246, 0.25);
-            margin-bottom: 16px;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
         }
 
-        .btn-primary:hover {
-            box-shadow: 0 8px 24px rgba(139, 92, 246, 0.4);
-            opacity: 0.95;
+        #openSettingsBtn:hover, #startTimerBtn:hover {
+            background-color: var(--accent-hover);
         }
 
-        .btn-secondary {
-            background: transparent;
+        #closeSettingsBtn, #closeConfirmBtn {
+            background-color: #f1f5f9;
             color: var(--text-sub);
-            font-size: 0.9rem;
-            padding: 8px 16px;
+            margin-top: 8px; /* 버튼 사이 여백 */
         }
 
-        .btn-secondary:hover {
+        #closeSettingsBtn:hover, #closeConfirmBtn:hover {
+            background-color: #e2e8f0;
             color: var(--text-main);
         }
 
-        /* 모달 스타일 기본 */
-        .modal-overlay {
+        #giveUpBtn, #finalGiveUpBtn {
+            background-color: var(--danger-red);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
+        }
+
+        #giveUpBtn:hover, #finalGiveUpBtn:hover {
+            background-color: var(--danger-hover);
+        }
+
+        #penaltyConfirmText {
+            display: inline-block;
+            font-weight: 700;
+            color: var(--danger-red);
+            background-color: #fef2f2;
+            padding: 4px 8px;
+            border-radius: 6px;
+            margin-top: 5px;
+        }
+
+        /* 모달 레이아웃 기본 정의 */
+        div[id$="Modal"] {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(15, 23, 42, 0.8);
-            backdrop-filter: blur(8px);
-            display: flex;
+            background-color: rgba(15, 23, 42, 0.3); /* 화사한 배경에 맞춘 투명도 */
+            backdrop-filter: blur(4px);
+            display: none; /* 기본 숨김 */
             justify-content: center;
             align-items: center;
             z-index: 1000;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
         }
 
-        .modal-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .modal-content {
-            background-color: var(--card-bg);
+        /* 메인 컨테이너 및 모달 내부 백그라운드 공통 (원래 div들) */
+        body > div:not([id$="Modal"]), div[id$="Modal"] > div {
+            background-color: var(--bg-card);
             border-radius: 24px;
-            width: 90%;
-            max-width: 400px;
-            padding: 32px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-            transform: translateY(20px);
-            transition: all 0.3s ease;
-            text-align: left;
-        }
-
-        .modal-overlay.active .modal-content {
-            transform: translateY(0);
-        }
-
-        .modal-content h2 {
-            font-size: 1.4rem;
-            font-weight: 700;
-            margin-bottom: 12px;
-            color: var(--text-main);
-        }
-
-        .modal-content p {
-            color: var(--text-sub);
-            font-size: 0.95rem;
-            line-height: 1.6;
-            margin-bottom: 24px;
-        }
-
-        /* 입력 폼 스타일 */
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 0.85rem;
-            color: var(--text-sub);
-            margin-bottom: 8px;
-            font-weight: 500;
-        }
-
-        .form-group input, .form-group select {
+            padding: 35px 25px;
             width: 100%;
-            padding: 14px 16px;
-            background-color: var(--bg-color);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            color: var(--text-main);
-            font-size: 1rem;
-            transition: all 0.2s ease;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(148, 163, 184, 0.15);
+            border: 1px solid rgba(226, 232, 240, 0.8);
         }
 
-        .form-group input:focus, .form-group select:focus {
-            outline: none;
-            border-color: var(--accent-purple);
-            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+        /* 모달이 열렸을 때 자바스크립트가 display를 다룰 수 있도록 지원 */
+        div[id$="Modal"] > div {
+            text-align: left; /* 모달 내부는 정렬을 깔끔하게 */
+            animation: popUp 0.25s ease-out;
         }
 
-        /* 모달 하단 버튼 배치 */
-        .modal-actions {
-            display: flex;
-            gap: 12px;
-            margin-top: 28px;
-        }
-
-        .modal-actions button {
-            flex: 1;
-            padding: 14px;
-        }
-
-        .btn-cancel {
-            background-color: var(--bg-color);
-            color: var(--text-sub);
-            border: 1px solid var(--border-color);
-        }
-
-        .btn-cancel:hover {
-            color: var(--text-main);
-            background-color: rgba(255, 255, 255, 0.05);
-        }
-
-        .btn-danger {
-            background-color: var(--danger);
-            color: white;
-            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
-        }
-
-        .btn-danger:hover {
-            opacity: 0.9;
+        @keyframes popUp {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
+    <div>
         <h1>Habit Lock</h1>
-        <p class="subtitle">나쁜 습관을 잠그고 시간에 몰입하세요</p>
+        <p>나쁜 습관을 잠그고 시간에 몰입하세요</p>
         
-        <div class="timer-display" id="timerDisplay">25:00</div>
+        <div id="timerDisplay">25:00</div>
         
-        <button class="btn-primary" id="openSettingsBtn">습관 잠금 시작하기</button>
-        <button class="btn-secondary" id="giveUpBtn" style="display: none;">포기하기</button>
+        <button id="openSettingsBtn">습관 잠금 시작하기</button>
+        <button id="giveUpBtn" style="display: none;">포기하기</button>
     </div>
 
-    <div class="modal-overlay" id="settingsModal">
-        <div class="modal-content">
-            <h2>습관 잠금 설정</h2>
+    <div id="settingsModal">
+        <div>
+            <h1>습관 잠금 설정</h1>
             <p>포기할 때 치를 대가와 제한 시간을 설정해 주세요.</p>
             
-            <div class="form-group">
-                <label for="penaltyInput">나쁜 습관 (또는 벌칙)</label>
-                <input type="text" id="penaltyInput" placeholder="예: 유튜브 쇼츠 보기, 꿀밤 대가">
-            </div>
+            <label>나쁜 습관 (또는 벌칙)</label>
+            <input type="text" id="penaltyInput" placeholder="예: 유튜브 쇼츠 보기, 꿀밤 대가">
             
-            <div class="form-group">
-                <label for="timeSelect">제한 시간</label>
-                <select id="timeSelect">
-                    <option value="10">10분</option>
-                    <option value="25" selected>25분</option>
-                    <option value="50">50분</option>
-                    <option value="60">1시간</option>
-                </select>
-            </div>
+            <label>제한 시간</label>
+            <select id="timeSelect">
+                <option value="10">10분</option>
+                <option value="25" selected>25분</option>
+                <option value="50">50분</option>
+                <option value="60">1시간</option>
+            </select>
             
-            <div class="modal-actions">
-                <button class="btn-cancel" id="closeSettingsBtn">취소</button>
-                <button class="btn-primary" id="startTimerBtn" style="margin-bottom:0;">잠금 시작</button>
-            </div>
+            <button id="startTimerBtn">잠금 시작</button>
+            <button id="closeSettingsBtn">취소</button>
         </div>
     </div>
 
-    <div class="modal-overlay" id="confirmModal">
-        <div class="modal-content">
-            <h2>정말 포기하시겠습니까?</h2>
-            <p>지금 포기하시면 설정하신 대가를 치러야 합니다:</p>
-            <div style="background: var(--bg-color); padding: 16px; border-radius: 12px; margin-bottom: 24px; border: 1px dashed var(--border-color);">
-                <strong id="penaltyConfirmText" style="color: var(--danger);"></strong>
-            </div>
-            <div class="modal-actions">
-                <button class="btn-cancel" id="closeConfirmBtn">계속 진행</button>
-                <button class="btn-danger" id="finalGiveUpBtn">포기하기</button>
-            </div>
+    <div id="confirmModal">
+        <div>
+            <h1>정말 포기하시겠습니까?</h1>
+            <p>지금 포기하시면 설정하신 대가를 치러야 합니다:<br>
+               <span id="penaltyConfirmText"></span>
+            </p>
+            <button id="finalGiveUpBtn">포기하기</button>
+            <button id="closeConfirmBtn">계속 진행</button>
         </div>
     </div>
 
     <script>
-        // 기존 JS 로직 유지 및 UI 인터랙션 연동
         const openSettingsBtn = document.getElementById('openSettingsBtn');
         const closeSettingsBtn = document.getElementById('closeSettingsBtn');
         const startTimerBtn = document.getElementById('startTimerBtn');
@@ -308,25 +246,25 @@
         let timeLeft;
         let isRunning = false;
 
-        // 모달 열고 닫기 토글 함수
-        function toggleModal(modal, show) {
-            if (show) modal.classList.add('active');
-            else modal.classList.remove('active');
-        }
-
         // 설정창 열기
-        openSettingsBtn.addEventListener('click', () => toggleModal(settingsModal, true));
-        closeSettingsBtn.addEventListener('click', () => toggleModal(settingsModal, false));
+        openSettingsBtn.addEventListener('click', () => {
+            settingsModal.style.display = 'flex';
+        });
+
+        // 설정창 닫기
+        closeSettingsBtn.addEventListener('click', () => {
+            settingsModal.style.display = 'none';
+        });
 
         // 타이머 시작
         startTimerBtn.addEventListener('click', () => {
             const minutes = parseInt(timeSelect.value);
             timeLeft = minutes * 60;
             updateDisplay(timeLeft);
-            toggleModal(settingsModal, false);
+            settingsModal.style.display = 'none';
             
             openSettingsBtn.style.display = 'none';
-            giveUpBtn.style.display = 'inline-block';
+            giveUpBtn.style.display = 'block';
             
             startTimer();
         });
@@ -334,10 +272,13 @@
         // 포기 확인창 열기
         giveUpBtn.addEventListener('click', () => {
             penaltyConfirmText.textContent = penaltyInput.value || "설정된 대가가 없습니다.";
-            toggleModal(confirmModal, true);
+            confirmModal.style.display = 'flex';
         });
 
-        closeConfirmBtn.addEventListener('click', () => toggleModal(confirmModal, false));
+        // 포기 취소 (계속 진행)
+        closeConfirmBtn.addEventListener('click', () => {
+            confirmModal.style.display = 'none';
+        });
 
         // 최종 포기
         finalGiveUpBtn.addEventListener('click', () => {
@@ -345,7 +286,7 @@
             isRunning = false;
             timerDisplay.textContent = "25:00";
             
-            toggleModal(confirmModal, false);
+            confirmModal.style.display = 'none';
             openSettingsBtn.style.display = 'block';
             giveUpBtn.style.display = 'none';
         });
