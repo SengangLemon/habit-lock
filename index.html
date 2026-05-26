@@ -3,20 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Habit Lock</title>
+    <title>HABIT LOCK</title>
     
     <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
-        /* 모바일 앱 느낌을 주기 위한 부드러운 기본 배경 스타일 */
         body {
             margin: 0;
             padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f5f5f7;
+            background: #050507; /* 깊이감 있는 극다크 배경 */
             display: flex;
             justify-content: center;
             align-items: flex-start;
@@ -24,10 +21,9 @@
         }
         #root {
             width: 100%;
-            max-width: 480px; /* 모바일 가로 너비 제한 */
-            background-color: #ffffff;
+            max-width: 480px;
+            background: #0B0B0E; /* 세련된 미드나잇 차콜 */
             min-height: 100vh;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
             box-sizing: border-box;
         }
     </style>
@@ -37,55 +33,967 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        // 브라우저 환경에서 React Hook을 편하게 쓰기 위한 선언
-        const { useState, useEffect, useRef } = React;
+        const { useState, useEffect, useCallback, useRef } = React;
 
-        // ----------------------------------------------------
-        // 본인이 작성한 habit-lock.jsx의 코드 내용을 
-        // 아래 App 컴포넌트 내부에 복사해서 넣으시면 됩니다.
-        // ----------------------------------------------------
-        function App() {
-            // 예시용 상태(State)와 로직입니다. 본인 코드로 대체하세요!
-            const [count, setCount] = useState(0);
+        // 세련된 파스텔 & 뮤트 톤으로 컬러 에셋 전면 수정
+        const COLORS = [
+          { bg: "#FF6B6B", light: "rgba(255,107,107,0.1)", border: "rgba(255,107,107,0.2)", text: "#FF8E8E" },
+          { bg: "#4ECDC4", light: "rgba(78,205,196,0.1)", border: "rgba(78,205,196,0.2)", text: "#6EE7E0" },
+          { bg: "#ECD06F", light: "rgba(236,208,111,0.1)", border: "rgba(236,208,111,0.2)", text: "#F4E1A2" },
+          { bg: "#A78BFA", light: "rgba(167,139,250,0.1)", border: "rgba(167,139,250,0.2)", text: "#C4B5FD" },
+          { bg: "#F97316", light: "rgba(249,115,22,0.1)", border: "rgba(249,115,22,0.2)", text: "#FB923C" },
+          { bg: "#06B6D4", light: "rgba(6,182,212,0.1)", border: "rgba(6,182,212,0.2)", text: "#22D3EE" },
+          { bg: "#EC4899", light: "rgba(236,72,153,0.1)", border: "rgba(236,72,153,0.2)", text: "#F472B6" },
+          { bg: "#84CC16", light: "rgba(132,204,22,0.1)", border: "rgba(132,204,22,0.2)", text: "#A3E635" },
+        ];
 
-            return (
-                <div style={{ padding: '20px', textAlign: 'center' }}>
-                    <h1 style={{ fontSize: '24px', marginTop: '40px', color: '#1d1d1f' }}>🔒 Habit Lock</h1>
-                    <p style={{ color: '#86868b', marginBottom: '30px' }}>나만의 습관 관리 앱</p>
-                    
-                    <div style={{ 
-                        background: '#f5f5f7', 
-                        padding: '20px', 
-                        borderRadius: '12px',
-                        marginBottom: '20px' 
-                    }}>
-                        <p style={{ fontSize: '18px', fontWeight: 'bold' }}>오늘의 실천 횟수</p>
-                        <p style={{ fontSize: '32px', color: '#0071e3', margin: '10px 0' }}>{count}회</p>
-                    </div>
+        const ICONS = ["🍺", "🚬", "🍔", "📱", "🎮", "☕", "🍫", "🛒", "💳", "🍕", "🎰", "🧁", "🥤", "📺", "🛋️"];
+        const DAYS_KR = ["일", "월", "화", "수", "목", "금", "토"];
+        const MONTHS_KR = ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"];
 
-                    <button 
-                        onClick={() => setCount(count + 1)}
-                        style={{
-                            background: '#0071e3',
-                            color: 'white',
-                            border: 'none',
-                            padding: '12px 24px',
-                            borderRadius: '8px',
-                            fontSize: '16px',
-                            fontWeight: '600',
-                            cursor: 'pointer',
-                            width: '100%'
-                        }}
-                    >
-                        성공 체크하기
-                    </button>
-                </div>
-            );
+        function formatDate(y, m, d) {
+          return `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
         }
 
-        // 화면에 최종 렌더링을 수행하는 코드
+        function parseDate(str) {
+          const [y, m, d] = str.split("-").map(Number);
+          return new Date(y, m - 1, d);
+        }
+
+        function daysBetween(d1Str, d2Str) {
+          const d1 = parseDate(d1Str);
+          const d2 = parseDate(d2Str);
+          return Math.floor((d2 - d1) / (1000 * 60 * 60 * 24));
+        }
+
+        function getDaysInMonth(y, m) {
+          return new Date(y, m + 1, 0).getDate();
+        }
+
+        function getFirstDayOfMonth(y, m) {
+          return new Date(y, m, 1).getDay();
+        }
+
+        function HabitLockApp() {
+          const [habits, setHabits] = useState([]);
+          const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
+          const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+          const [selectedHabit, setSelectedHabit] = useState(null);
+          const [showAddModal, setShowAddModal] = useState(false);
+          const [newHabitName, setNewHabitName] = useState("");
+          const [newHabitDays, setNewHabitDays] = useState(4);
+          const [newHabitIcon, setNewHabitIcon] = useState("🍺");
+          const [loaded, setLoaded] = useState(false);
+          const [toast, setToast] = useState(null);
+          const [confirmDelete, setConfirmDelete] = useState(null);
+          const [showEditModal, setShowEditModal] = useState(null);
+          const [editName, setEditName] = useState("");
+          const [editDays, setEditDays] = useState(4);
+          const [editIcon, setEditIcon] = useState("");
+          const [undoData, setUndoData] = useState(null);
+
+          useEffect(() => {
+            try {
+              const savedData = localStorage.getItem("habit-lock-data");
+              if (savedData) setHabits(JSON.parse(savedData));
+            } catch (e) { console.error(e); }
+            setLoaded(true);
+          }, []);
+
+          useEffect(() => {
+            if (!loaded) return;
+            try {
+              localStorage.setItem("habit-lock-data", JSON.stringify(habits));
+            } catch (e) { console.error(e); }
+          }, [habits, loaded]);
+
+          useEffect(() => {
+            if (toast) {
+              const t = setTimeout(() => setToast(null), 2800);
+              return () => clearTimeout(t);
+            }
+          }, [toast]);
+
+          useEffect(() => {
+            if (undoData) {
+              const t = setTimeout(() => setUndoData(null), 5000);
+              return () => clearTimeout(t);
+            }
+          }, [undoData]);
+
+          const todayStr = formatDate(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
+
+          const addHabit = () => {
+            if (!newHabitName.trim()) return;
+            const colorIdx = habits.length % COLORS.length;
+            setHabits(prev => [...prev, {
+              id: Date.now().toString(),
+              name: newHabitName.trim(),
+              cooldown: newHabitDays,
+              icon: newHabitIcon,
+              color: colorIdx,
+              logs: [],
+            }]);
+            setNewHabitName("");
+            setNewHabitDays(4);
+            setNewHabitIcon("🍺");
+            setShowAddModal(false);
+            setToast("습관이 추가되었습니다");
+          };
+
+          const deleteHabit = (id) => {
+            setHabits(prev => prev.filter(h => h.id !== id));
+            if (selectedHabit === id) setSelectedHabit(null);
+            setConfirmDelete(null);
+            setToast("삭제되었습니다");
+          };
+
+          const toggleLog = (habitId, dateStr) => {
+            setHabits(prev => prev.map(h => {
+              if (h.id !== habitId) return h;
+              const existing = h.logs.includes(dateStr);
+              if (existing) {
+                setUndoData({ habitId, dateStr, action: "remove" });
+                return { ...h, logs: h.logs.filter(d => d !== dateStr) };
+              }
+              const isLocked = h.logs.some(logDate => {
+                const diff = daysBetween(logDate, dateStr);
+                return diff > 0 && diff < h.cooldown;
+              });
+              if (isLocked) {
+                setToast("🔒 아직 쿨다운 기간입니다!");
+                return h;
+              }
+              setUndoData({ habitId, dateStr, action: "add" });
+              return { ...h, logs: [...h.logs, dateStr].sort() };
+            }));
+          };
+
+          const handleUndo = () => {
+            if (!undoData) return;
+            setHabits(prev => prev.map(h => {
+              if (h.id !== undoData.habitId) return h;
+              if (undoData.action === "add") {
+                return { ...h, logs: h.logs.filter(d => d !== undoData.dateStr) };
+              } else {
+                return { ...h, logs: [...h.logs, undoData.dateStr].sort() };
+              }
+            }));
+            setUndoData(null);
+            setToast("되돌렸습니다");
+          };
+
+          const getLockedDates = (habit) => {
+            const locked = new Set();
+            habit.logs.forEach(logDate => {
+              for (let i = 1; i < habit.cooldown; i++) {
+                const d = parseDate(logDate);
+                d.setDate(d.getDate() + i);
+                locked.add(formatDate(d.getFullYear(), d.getMonth(), d.getDate()));
+              }
+            });
+            return locked;
+          };
+
+          const getNextAvailable = (habit) => {
+            if (habit.logs.length === 0) return null;
+            const lastLog = habit.logs[habit.logs.length - 1];
+            const d = parseDate(lastLog);
+            d.setDate(d.getDate() + habit.cooldown);
+            return formatDate(d.getFullYear(), d.getMonth(), d.getDate());
+          };
+
+          const prevMonth = () => {
+            if (currentMonth === 0) { setCurrentMonth(11); setCurrentYear(y => y - 1); }
+            else setCurrentMonth(m => m - 1);
+          };
+
+          const nextMonth = () => {
+            if (currentMonth === 11) { setCurrentMonth(0); setCurrentYear(y => y + 1); }
+            else setCurrentMonth(m => m + 1);
+          };
+
+          const goToday = () => {
+            setCurrentMonth(new Date().getMonth());
+            setCurrentYear(new Date().getFullYear());
+          };
+
+          const saveEdit = () => {
+            if (!editName.trim() || !showEditModal) return;
+            setHabits(prev => prev.map(h => {
+              if (h.id !== showEditModal) return h;
+              return { ...h, name: editName.trim(), cooldown: editDays, icon: editIcon };
+            }));
+            setShowEditModal(null);
+            setToast("수정되었습니다");
+          };
+
+          const openEdit = (habit) => {
+            setEditName(habit.name);
+            setEditDays(habit.cooldown);
+            setEditIcon(habit.icon);
+            setShowEditModal(habit.id);
+          };
+
+          const daysInMonth = getDaysInMonth(currentYear, currentMonth);
+          const firstDay = getFirstDayOfMonth(currentYear, currentMonth);
+
+          const activeHabit = habits.find(h => h.id === selectedHabit);
+          const lockedDates = activeHabit ? getLockedDates(activeHabit) : new Set();
+          const activeColor = activeHabit ? COLORS[activeHabit.color] : null;
+
+          const allHabitsData = selectedHabit ? [] : habits.map(h => ({
+            ...h,
+            locked: getLockedDates(h),
+            c: COLORS[h.color],
+          }));
+
+          const calendarCells = [];
+          for (let i = 0; i < firstDay; i++) calendarCells.push(null);
+          for (let d = 1; d <= daysInMonth; d++) calendarCells.push(d);
+
+          return (
+            <div style={styles.container}>
+              <style>{`
+                @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap');
+                * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+                body { font-family: 'Inter', 'Noto Sans KR', sans-serif; }
+                /* 스크롤바 완전 숨김으로 심플함 극대화 */
+                ::-webkit-scrollbar { display: none; }
+                @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+                @keyframes slideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+                @keyframes toastIn { from { opacity: 0; transform: translate(-50%, 12px); } to { opacity: 1; transform: translate(-50%, 0); } }
+              `}</style>
+
+              {/* Header */}
+              <div style={styles.header}>
+                <div>
+                  <h1 style={styles.title}>HABIT LOCK</h1>
+                  <p style={styles.subtitle}>인터벌 중심의 절제 기록 인터페이스</p>
+                </div>
+                <button onClick={() => setShowAddModal(true)} style={styles.addBtn}>
+                  <span>＋</span>
+                </button>
+              </div>
+
+              {/* Habit Bullets Horizontal Scroll */}
+              <div style={styles.bulletsContainer}>
+                <div style={styles.bulletsScroll}>
+                  <button
+                    onClick={() => setSelectedHabit(null)}
+                    style={{
+                      ...styles.bulletChip,
+                      background: !selectedHabit ? "rgba(255,255,255,0.08)" : "transparent",
+                      color: !selectedHabit ? "#ffffff" : "rgba(255,255,255,0.4)",
+                      border: !selectedHabit ? "1px solid rgba(255,255,255,0.12)" : "1px solid rgba(255,255,255,0.04)",
+                    }}
+                  >
+                    <span>📋 전체</span>
+                  </button>
+                  {habits.map(h => {
+                    const c = COLORS[h.color];
+                    const isActive = selectedHabit === h.id;
+                    const nextDate = getNextAvailable(h);
+                    const isAvailable = !nextDate || daysBetween(todayStr, nextDate) <= 0;
+                    return (
+                      <button
+                        key={h.id}
+                        onClick={() => setSelectedHabit(isActive ? null : h.id)}
+                        style={{
+                          ...styles.bulletChip,
+                          background: isActive ? c.light : "transparent",
+                          color: isActive ? c.text : "rgba(255,255,255,0.4)",
+                          border: isActive ? `1px solid ${c.border}` : "1px solid rgba(255,255,255,0.04)",
+                        }}
+                      >
+                        <span>{h.icon} {h.name}</span>
+                        {!isAvailable && <span style={{ ...styles.dotIndicator, background: c.bg }} />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Calendar Container */}
+              <div style={styles.calendarCard}>
+                <div style={styles.calendarNav}>
+                  <button onClick={prevMonth} style={styles.navBtn}>‹</button>
+                  <button onClick={goToday} style={styles.monthLabel}>
+                    {currentYear}. {String(currentMonth + 1).padStart(2, '0')}
+                  </button>
+                  <button onClick={nextMonth} style={styles.navBtn}>›</button>
+                </div>
+
+                <div style={styles.dayHeaders}>
+                  {DAYS_KR.map((d, i) => (
+                    <div key={d} style={{ ...styles.dayHeader, color: i === 0 ? "rgba(255,107,107,0.5)" : i === 6 ? "rgba(78,205,196,0.5)" : "rgba(255,255,255,0.2)" }}>{d}</div>
+                  ))}
+                </div>
+
+                <div style={styles.calendarGrid}>
+                  {calendarCells.map((day, idx) => {
+                    if (day === null) return <div key={`e-${idx}`} style={styles.emptyCell} />;
+
+                    const dateStr = formatDate(currentYear, currentMonth, day);
+                    const isToday = dateStr === todayStr;
+                    const dayOfWeek = (firstDay + day - 1) % 7;
+
+                    let cellContent = null;
+                    let cellBg = "rgba(255,255,255,0.01)";
+                    let cellBorder = "1px solid transparent";
+
+                    if (activeHabit) {
+                      const isLogged = activeHabit.logs.includes(dateStr);
+                      const isLocked = lockedDates.has(dateStr);
+
+                      if (isLogged) {
+                        cellBg = activeColor.bg;
+                        cellContent = <span style={{ fontSize: 15 }}>{activeHabit.icon}</span>;
+                      } else if (isLocked) {
+                        cellBg = "rgba(255,255,255,0.02)";
+                        cellBorder = `1px dashed ${activeColor.border}`;
+                        cellContent = <span style={{ fontSize: 10, color: activeColor.text, opacity: 0.6 }}>🔒</span>;
+                      }
+                    } else {
+                      const dots = allHabitsData.filter(h => h.logs.includes(dateStr));
+                      const locks = allHabitsData.filter(h => !h.logs.includes(dateStr) && h.locked.has(dateStr));
+                      if (dots.length > 0) {
+                        cellContent = (
+                          <div style={styles.globalDotsGrid}>
+                            {dots.slice(0, 4).map(h => (
+                              <span key={h.id} style={{ fontSize: 9 }}>{h.icon}</span>
+                            ))}
+                          </div>
+                        );
+                      } else if (locks.length > 0) {
+                        cellContent = (
+                          <div style={styles.globalLocksGrid}>
+                            {locks.slice(0, 3).map(h => (
+                              <span key={h.id} style={{ width: 4, height: 4, borderRadius: "50%", background: h.c.bg, opacity: 0.4 }} />
+                            ))}
+                          </div>
+                        );
+                      }
+                    }
+
+                    return (
+                      <button
+                        key={day}
+                        onClick={() => activeHabit && toggleLog(activeHabit.id, dateStr)}
+                        style={{
+                          ...styles.dayCell,
+                          background: cellBg,
+                          border: cellBorder,
+                          cursor: activeHabit ? "pointer" : "default",
+                        }}
+                      >
+                        <span style={{
+                          ...styles.dayNumber,
+                          fontWeight: isToday ? "700" : "400",
+                          color: cellContent && activeHabit ? "#000000" : isToday ? "#ffffff" : dayOfWeek === 0 ? "rgba(255,107,107,0.6)" : dayOfWeek === 6 ? "rgba(78,205,196,0.6)" : "rgba(255,255,255,0.4)",
+                        }}>
+                          {day}
+                        </span>
+                        {cellContent && <div style={{ marginTop: 2, display: "flex", justifyContent: "center" }}>{cellContent}</div>}
+                        {isToday && !cellContent && <div style={styles.todayIndicator} />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Cards Section */}
+              <div style={styles.cardsSection}>
+                {(activeHabit ? [activeHabit] : habits).map(h => {
+                  const c = COLORS[h.color];
+                  const nextDate = getNextAvailable(h);
+                  const isAvailable = !nextDate || daysBetween(todayStr, nextDate) <= 0;
+                  const daysLeft = nextDate ? Math.max(0, daysBetween(todayStr, nextDate)) : 0;
+                  const totalLogs = h.logs.length;
+                  const thisMonthLogs = h.logs.filter(d => d.startsWith(`${currentYear}-${String(currentMonth + 1).padStart(2, "0")}`)).length;
+
+                  return (
+                    <div key={h.id} style={styles.habitCard}>
+                      <div style={styles.habitCardTop}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                          <div style={{ ...styles.cardIconBox, background: c.light, border: `1px solid ${c.border}` }}>
+                            {h.icon}
+                          </div>
+                          <div>
+                            <div style={styles.cardName}>{h.name}</div>
+                            <div style={styles.cardCooldownText}>{h.cooldown}일 간격 통제</div>
+                          </div>
+                        </div>
+                        <div style={{ display: "flex", gap: 4 }}>
+                          <button onClick={() => openEdit(h)} style={styles.smallActionBtn}>✏️</button>
+                          <button onClick={() => setConfirmDelete(h.id)} style={styles.smallActionBtn}>🗑️</button>
+                        </div>
+                      </div>
+
+                      <div style={styles.statusRow}>
+                        <div style={{
+                          ...styles.statusBadge,
+                          background: isAvailable ? "rgba(78,205,196,0.06)" : "rgba(255,107,107,0.06)",
+                          color: isAvailable ? "#4ECDC4" : "#FF6B6B",
+                          border: isAvailable ? "1px solid rgba(78,205,196,0.15)" : "1px solid rgba(255,107,107,0.15)",
+                        }}>
+                          {isAvailable ? "기록 가능 정합" : `잠금 해제까지 ${daysLeft}일`}
+                        </div>
+                        <div style={styles.statGroup}>
+                          <div style={styles.statItem}>
+                            <span style={styles.statLabel}>당월</span>
+                            <span style={{ color: c.text, fontWeight: "600" }}>{thisMonthLogs}</span>
+                          </div>
+                          <div style={styles.statItem}>
+                            <span style={styles.statLabel}>누적</span>
+                            <span style={{ color: "rgba(255,255,255,0.7)", fontWeight: "600" }}>{totalLogs}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {!isAvailable && (
+                        <div style={styles.progressContainer}>
+                          <div style={{
+                            height: "100%",
+                            background: c.bg,
+                            width: `${((h.cooldown - daysLeft) / h.cooldown) * 100}%`,
+                            transition: "width 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
+                          }} />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+
+                {habits.length === 0 && (
+                  <div style={styles.emptyState}>
+                    <p style={{ fontSize: 24, marginBottom: 8 }}>⚡</p>
+                    <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 13, fontWeight: 400 }}>
+                      상단의 버튼을 눌러 통제 리스트를 개설하세요.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Add Modal */}
+              {showAddModal && (
+                <div style={styles.overlay} onClick={() => setShowAddModal(false)}>
+                  <div style={styles.modal} onClick={e => e.stopPropagation()}>
+                    <h2 style={styles.modalTitle}>새로운 통제 생성</h2>
+
+                    <label style={styles.label}>상징 아이콘</label>
+                    <div style={styles.iconGrid}>
+                      {ICONS.map(ic => (
+                        <button key={ic} onClick={() => setNewHabitIcon(ic)} style={{
+                          ...styles.iconBtn,
+                          background: newHabitIcon === ic ? "rgba(255,255,255,0.08)" : "transparent",
+                          border: newHabitIcon === ic ? "1px solid rgba(255,255,255,0.2)" : "1px solid rgba(255,255,255,0.03)",
+                        }}>
+                          {ic}
+                        </button>
+                      ))}
+                    </div>
+
+                    <label style={styles.label}>통제 대상 이름</label>
+                    <input
+                      value={newHabitName}
+                      onChange={e => setNewHabitName(e.target.value)}
+                      placeholder="예: 음주, 야식, 모바일 게임"
+                      style={styles.input}
+                      onKeyDown={e => e.key === "Enter" && addHabit()}
+                    />
+
+                    <label style={styles.label}>필수 쿨다운 간격 설정</label>
+                    <div style={styles.daysSelector}>
+                      {.map(d => (
+                        <button key={d} onClick={() => setNewHabitDays(d)} style={{
+                          ...styles.dayOption,
+                          background: newHabitDays === d ? "rgba(255,255,255,0.08)" : "transparent",
+                          border: newHabitDays === d ? "1px solid rgba(255,255,255,0.2)" : "1px solid rgba(255,255,255,0.03)",
+                          color: newHabitDays === d ? "#ffffff" : "rgba(255,255,255,0.4)",
+                        }}>
+                          {d}일
+                        </button>
+                      ))}
+                    </div>
+
+                    <div style={styles.modalActions}>
+                      <button onClick={() => setShowAddModal(false)} style={styles.cancelBtn}>이전</button>
+                      <button onClick={addHabit} style={{ ...styles.confirmBtn, opacity: newHabitName.trim() ? 1 : 0.3 }}>생성하기</button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Edit Modal */}
+              {showEditModal && (
+                <div style={styles.overlay} onClick={() => setShowEditModal(null)}>
+                  <div style={styles.modal} onClick={e => e.stopPropagation()}>
+                    <h2 style={styles.modalTitle}>통제 설정 수정</h2>
+
+                    <label style={styles.label}>아이콘 교체</label>
+                    <div style={styles.iconGrid}>
+                      {ICONS.map(ic => (
+                        <button key={ic} onClick={() => setEditIcon(ic)} style={{
+                          ...styles.iconBtn,
+                          background: editIcon === ic ? "rgba(255,255,255,0.08)" : "transparent",
+                          border: editIcon === ic ? "1px solid rgba(255,255,255,0.2)" : "1px solid rgba(255,255,255,0.03)",
+                        }}>
+                          {ic}
+                        </button>
+                      ))}
+                    </div>
+
+                    <label style={styles.label}>이름 수정</label>
+                    <input
+                      value={editName}
+                      onChange={e => setEditName(e.target.value)}
+                      style={styles.input}
+                      onKeyDown={e => e.key === "Enter" && saveEdit()}
+                    />
+
+                    <label style={styles.label}>쿨다운 재지정</label>
+                    <div style={styles.daysSelector}>
+                      {.map(d => (
+                        <button key={d} onClick={() => setEditDays(d)} style={{
+                          ...styles.dayOption,
+                          background: editDays === d ? "rgba(255,255,255,0.08)" : "transparent",
+                          border: editDays === d ? "1px solid rgba(255,255,255,0.2)" : "1px solid rgba(255,255,255,0.03)",
+                          color: editDays === d ? "#ffffff" : "rgba(255,255,255,0.4)",
+                        }}>
+                          {d}일
+                        </button>
+                      ))}
+                    </div>
+
+                    <div style={styles.modalActions}>
+                      <button onClick={() => setShowEditModal(null)} style={styles.cancelBtn}>취소</button>
+                      <button onClick={saveEdit} style={styles.confirmBtn}>적용</button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Delete Confirm */}
+              {confirmDelete && (
+                <div style={styles.overlay} onClick={() => setConfirmDelete(null)}>
+                  <div style={{ ...styles.modal, maxWidth: 300, textAlign: "center" }} onClick={e => e.stopPropagation()}>
+                    <p style={{ color: "#ffffff", fontSize: 14, fontWeight: 500, marginBottom: 8 }}>개설된 통제 정보를 영구 삭제합니까?</p>
+                    <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 12, marginBottom: 24 }}>연동된 내부 마일스톤 데이터가 모두 유실됩니다.</p>
+                    <div style={styles.modalActions}>
+                      <button onClick={() => setConfirmDelete(null)} style={styles.cancelBtn}>보존</button>
+                      <button onClick={() => deleteHabit(confirmDelete)} style={{ ...styles.confirmBtn, background: "#E15252", color: "#ffffff" }}>삭제</button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Toast */}
+              {toast && (
+                <div style={styles.toast}>{toast}</div>
+              )}
+
+              {/* Undo Interface */}
+              {undoData && (
+                <div style={styles.undoBar}>
+                  <span>액션이 타임라인에 반영되었습니다.</span>
+                  <button onClick={handleUndo} style={styles.undoBtn}>실행 취소</button>
+                </div>
+              )}
+            </div>
+          );
+        }
+
+        // 디자인 팩토리 테마 스타일시트 오브젝트
+        const styles = {
+          container: {
+            background: "#0B0B0E",
+            minHeight: "100vh",
+            color: "#ffffff",
+            paddingBottom: 60,
+            maxWidth: 480,
+            margin: "0 auto",
+            position: "relative",
+            animation: "fadeIn 0.4s ease",
+          },
+          header: {
+            padding: "36px 24px 16px",
+            display: "flex",
+            justify-content: "space-between",
+            alignItems: "center",
+          },
+          title: {
+            fontSize: 20,
+            fontWeight: 700,
+            letterSpacing: "1.5px",
+            color: "#ffffff",
+          },
+          subtitle: {
+            fontSize: 11,
+            color: "rgba(255,255,255,0.3)",
+            marginTop: 4,
+            fontWeight: 400,
+          },
+          addBtn: {
+            width: 38,
+            height: 38,
+            borderRadius: "50%",
+            background: "rgba(255,255,255,0.04)",
+            border: "1px solid rgba(255,255,255,0.06)",
+            color: "#ffffff",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justify-content: "center",
+            fontSize: 14,
+            transition: "all 0.2s",
+          },
+          bulletsContainer: {
+            padding: "0 24px 16px",
+            overflowX: "auto",
+          },
+          bulletsScroll: {
+            display: "flex",
+            gap: 6,
+          },
+          bulletChip: {
+            display: "flex",
+            alignItems: "center",
+            padding: "7px 14px",
+            borderRadius: 18,
+            cursor: "pointer",
+            whiteSpace: "nowrap",
+            fontSize: 12,
+            fontWeight: 500,
+            position: "relative",
+            transition: "all 0.2s ease",
+          },
+          dotIndicator: {
+            width: 5,
+            height: 5,
+            borderRadius: "50%",
+            marginLeft: 5,
+          },
+          calendarCard: {
+            margin: "0 16px 20px",
+            padding: "20px 12px",
+            background: "rgba(255,255,255,0.02)",
+            borderRadius: 20,
+            border: "1px solid rgba(255,255,255,0.03)",
+          },
+          calendarNav: {
+            display: "flex",
+            justify-content: "space-between",
+            alignItems: "center",
+            marginBottom: 20,
+            padding: "0 8px",
+          },
+          navBtn: {
+            width: 32,
+            height: 32,
+            background: "transparent",
+            border: "none",
+            color: "rgba(255,255,255,0.3)",
+            fontSize: 22,
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justify-content: "center",
+          },
+          monthLabel: {
+            fontSize: 15,
+            fontWeight: 600,
+            color: "#ffffff",
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            letterSpacing: "0.5px",
+          },
+          dayHeaders: {
+            display: "grid",
+            gridTemplateColumns: "repeat(7, 1fr)",
+            marginBottom: 10,
+          },
+          dayHeader: {
+            textAlign: "center",
+            fontSize: 10,
+            fontWeight: 500,
+          },
+          calendarGrid: {
+            display: "grid",
+            gridTemplateColumns: "repeat(7, 1fr)",
+            gap: "5px",
+          },
+          emptyCell: {
+            aspectRatio: "1",
+          },
+          dayCell: {
+            aspectRatio: "1",
+            borderRadius: 12,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            border: "none",
+            position: "relative",
+            transition: "all 0.2s cubic-bezier(0.16, 1, 0.3, 1)",
+          },
+          dayNumber: {
+            fontSize: 11,
+          },
+          todayIndicator: {
+            position: "absolute",
+            bottom: 4,
+            width: 3,
+            height: 3,
+            borderRadius: "50%",
+            background: "rgba(255,255,255,0.4)",
+          },
+          globalDotsGrid: {
+            display: "flex",
+            gap: 1,
+            justifyContent: "center",
+            transform: "scale(0.85)",
+          },
+          globalLocksGrid: {
+            display: "flex",
+            gap: 2,
+            justifyContent: "center",
+            marginTop: 2,
+          },
+          cardsSection: {
+            padding: "0 16px",
+            display: "flex",
+            flexDirection: "column",
+            gap: 10,
+          },
+          habitCard: {
+            padding: "18px",
+            background: "rgba(255,255,255,0.02)",
+            borderRadius: 20,
+            border: "1px solid rgba(255,255,255,0.03)",
+          },
+          habitCardTop: {
+            display: "flex",
+            justify-content: "space-between",
+            alignItems: "center",
+          },
+          cardIconBox: {
+            width: 36,
+            height: 36,
+            borderRadius: 10,
+            display: "flex",
+            alignItems: "center",
+            justify-content: "center",
+            fontSize: 16,
+          },
+          cardName: {
+            fontSize: 14,
+            fontWeight: 600,
+            color: "#ffffff",
+          },
+          cardCooldownText: {
+            fontSize: 11,
+            color: "rgba(255,255,255,0.3)",
+            marginTop: 2,
+          },
+          smallActionBtn: {
+            width: 28,
+            height: 28,
+            background: "transparent",
+            border: "none",
+            cursor: "pointer",
+            fontSize: 12,
+            opacity: 0.3,
+            transition: "opacity 0.2s",
+          },
+          statusRow: {
+            display: "flex",
+            justify-content: "space-between",
+            alignItems: "center",
+            marginTop: 16,
+          },
+          statusBadge: {
+            padding: "4px 10px",
+            borderRadius: 6,
+            fontSize: 11,
+            fontWeight: 500,
+          },
+          statGroup: {
+            display: "flex",
+            gap: 12,
+          },
+          statItem: {
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
+            fontSize: 12,
+          },
+          statLabel: {
+            color: "rgba(255,255,255,0.25)",
+            fontSize: 11,
+          },
+          progressContainer: {
+            marginTop: 14,
+            height: 2,
+            background: "rgba(255,255,255,0.03)",
+            borderRadius: 1,
+            overflow: "hidden",
+          },
+          emptyState: {
+            textAlign: "center",
+            padding: "40px 20px",
+          },
+          overlay: {
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.6)",
+            backdropFilter: "blur(16px)",
+            display: "flex",
+            alignItems: "center",
+            justify(Content): "center",
+            zIndex: 100,
+            animation: "fadeIn 0.2s ease",
+            padding: 24,
+          },
+          modal: {
+            background: "#121217",
+            borderRadius: 24,
+            padding: 24,
+            width: "100%",
+            maxWidth: 360,
+            border: "1px solid rgba(255,255,255,0.06)",
+            animation: "slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
+          },
+          modalTitle: {
+            fontSize: 16,
+            fontWeight: 600,
+            marginBottom: 20,
+            color: "#ffffff",
+            letterSpacing: "-0.3px",
+          },
+          label: {
+            display: "block",
+            fontSize: 11,
+            color: "rgba(255,255,255,0.3)",
+            marginBottom: 8,
+            fontWeight: 500,
+          },
+          iconGrid: {
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 6,
+            marginBottom: 18,
+          },
+          iconBtn: {
+            width: 36,
+            height: 36,
+            borderRadius: 8,
+            fontSize: 16,
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            transition: "all 0.15s ease",
+          },
+          input: {
+            width: "100%",
+            padding: "10px 14px",
+            background: "rgba(255,255,255,0.03)",
+            border: "1px solid rgba(255,255,255,0.06)",
+            borderRadius: 10,
+            color: "#ffffff",
+            fontSize: 13,
+            outline: "none",
+            marginBottom: 18,
+          },
+          daysSelector: {
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 6,
+            marginBottom: 24,
+          },
+          dayOption: {
+            padding: "6px 12px",
+            borderRadius: 8,
+            fontSize: 12,
+            cursor: "pointer",
+            fontWeight: 500,
+            transition: "all 0.15s ease",
+          },
+          modalActions: {
+            display: "flex",
+            gap: 8,
+          },
+          cancelBtn: {
+            flex: 1,
+            padding: "10px",
+            borderRadius: 10,
+            background: "transparent",
+            border: "1px solid rgba(255,255,255,0.06)",
+            color: "rgba(255,255,255,0.4)",
+            fontSize: 13,
+            cursor: "pointer",
+          },
+          confirmBtn: {
+            flex: 1,
+            padding: "10px",
+            borderRadius: 10,
+            background: "#4ECDC4",
+            border: "none",
+            color: "#0B0B0E",
+            fontSize: 13,
+            cursor: "pointer",
+            fontWeight: 600,
+          },
+          toast: {
+            position: "fixed",
+            bottom: 40,
+            left: "50%",
+            transform: "translateX(-50%)",
+            background: "#ffffff",
+            color: "#050507",
+            padding: "8px 18px",
+            borderRadius: 20,
+            fontSize: 12,
+            fontWeight: 500,
+            zIndex: 200,
+            animation: "toastIn 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
+            boxShadow: "0 8px 24px rgba(0,0,0,0.4)",
+            whiteSpace: "nowrap",
+          },
+          undoBar: {
+            position: "fixed",
+            bottom: 24,
+            left: "50%",
+            transform: "translateX(-50%)",
+            background: "#121217",
+            border: "1px solid rgba(255,255,255,0.08)",
+            padding: "10px 14px",
+            borderRadius: 14,
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            zIndex: 200,
+            animation: "toastIn 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
+            color: "rgba(255,255,255,0.6)",
+            fontSize: 12,
+            whiteSpace: "nowrap",
+          },
+          undoBtn: {
+            background: "rgba(78,205,196,0.1)",
+            border: "1px solid rgba(78,205,196,0.2)",
+            color: "#4ECDC4",
+            padding: "4px 10px",
+            borderRadius: 6,
+            fontSize: 11,
+            fontWeight: 600,
+            cursor: "pointer",
+          },
+        };
+
         const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+        root.render(<HabitLockApp />);
     </script>
 </body>
 </html>
