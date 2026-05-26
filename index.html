@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HABIT LOCK</title>
     
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
 
     <style>
         body {
@@ -32,10 +32,14 @@
     <div id="root"></div>
 
     <script>
+    window.onload = function() {
+        if (typeof React === 'undefined') {
+            document.getElementById('root').innerHTML = '<p style="color:white;text-align:center;padding:40px;font-family:sans-serif;">React 로딩 실패 — 인터넷 연결을 확인하세요.</p>';
+            return;
+        }
         const { useState, useEffect } = React;
         const e = React.createElement;
 
-        // 에셋 및 유틸리티 함수 정의
         const COLORS = [
           { bg: "#FF6B6B", light: "rgba(255,107,107,0.1)", border: "rgba(255,107,107,0.2)", text: "#FF8E8E" },
           { bg: "#4ECDC4", light: "rgba(78,205,196,0.1)", border: "rgba(78,205,196,0.2)", text: "#6EE7E0" },
@@ -49,19 +53,20 @@
 
         const ICONS = ["🍺", "🚬", "🍔", "📱", "🎮", "☕", "🍫", "🛒", "💳", "🍕", "🎰", "🧁", "🥤", "📺", "🛋️"];
         const DAYS_KR = ["일", "월", "화", "수", "목", "금", "토"];
+        const COOLDOWN_OPTIONS = [2, 3, 4, 5, 7, 10, 14, 30];
 
         function formatDate(y, m, d) {
-          return `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+          return y + "-" + String(m + 1).padStart(2, "0") + "-" + String(d).padStart(2, "0");
         }
 
         function parseDate(str) {
-          const [y, m, d] = str.split("-").map(Number);
-          return new Date(y, m - 1, d);
+          var parts = str.split("-").map(Number);
+          return new Date(parts[0], parts[1] - 1, parts[2]);
         }
 
         function daysBetween(d1Str, d2Str) {
-          const d1 = parseDate(d1Str);
-          const d2 = parseDate(d2Str);
+          var d1 = parseDate(d1Str);
+          var d2 = parseDate(d2Str);
           return Math.floor((d2 - d1) / (1000 * 60 * 60 * 24));
         }
 
@@ -74,65 +79,68 @@
         }
 
         function HabitLockApp() {
-          const [habits, setHabits] = useState([]);
-          const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
-          const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
-          const [selectedHabit, setSelectedHabit] = useState(null);
-          const [showAddModal, setShowAddModal] = useState(false);
-          const [newHabitName, setNewHabitName] = useState("");
-          const [newHabitDays, setNewHabitDays] = useState(4);
-          const [newHabitIcon, setNewHabitIcon] = useState("🍺");
-          const [loaded, setLoaded] = useState(false);
-          const [toast, setToast] = useState(null);
-          const [confirmDelete, setConfirmDelete] = useState(null);
-          const [showEditModal, setShowEditModal] = useState(null);
-          const [editName, setEditName] = useState("");
-          const [editDays, setEditDays] = useState(4);
-          const [editIcon, setEditIcon] = useState("");
-          const [undoData, setUndoData] = useState(null);
+          var _useState = useState([]), habits = _useState[0], setHabits = _useState[1];
+          var _cm = useState(new Date().getMonth()), currentMonth = _cm[0], setCurrentMonth = _cm[1];
+          var _cy = useState(new Date().getFullYear()), currentYear = _cy[0], setCurrentYear = _cy[1];
+          var _sh = useState(null), selectedHabit = _sh[0], setSelectedHabit = _sh[1];
+          var _sam = useState(false), showAddModal = _sam[0], setShowAddModal = _sam[1];
+          var _nhn = useState(""), newHabitName = _nhn[0], setNewHabitName = _nhn[1];
+          var _nhd = useState(4), newHabitDays = _nhd[0], setNewHabitDays = _nhd[1];
+          var _nhi = useState("🍺"), newHabitIcon = _nhi[0], setNewHabitIcon = _nhi[1];
+          var _ld = useState(false), loaded = _ld[0], setLoaded = _ld[1];
+          var _ts = useState(null), toast = _ts[0], setToast = _ts[1];
+          var _cd = useState(null), confirmDelete = _cd[0], setConfirmDelete = _cd[1];
+          var _sem = useState(null), showEditModal = _sem[0], setShowEditModal = _sem[1];
+          var _en = useState(""), editName = _en[0], setEditName = _en[1];
+          var _ed = useState(4), editDays = _ed[0], setEditDays = _ed[1];
+          var _ei = useState(""), editIcon = _ei[0], setEditIcon = _ei[1];
+          var _ud = useState(null), undoData = _ud[0], setUndoData = _ud[1];
 
-          useEffect(() => {
+          useEffect(function() {
             try {
-              const savedData = localStorage.getItem("habit-lock-data");
+              var savedData = localStorage.getItem("habit-lock-data");
               if (savedData) setHabits(JSON.parse(savedData));
-            } catch (e) { console.error(e); }
+            } catch (err) { console.error(err); }
             setLoaded(true);
           }, []);
 
-          useEffect(() => {
+          useEffect(function() {
             if (!loaded) return;
             try {
               localStorage.setItem("habit-lock-data", JSON.stringify(habits));
-            } catch (e) { console.error(e); }
+            } catch (err) { console.error(err); }
           }, [habits, loaded]);
 
-          useEffect(() => {
+          useEffect(function() {
             if (toast) {
-              const t = setTimeout(() => setToast(null), 2800);
-              return () => clearTimeout(t);
+              var t = setTimeout(function() { setToast(null); }, 2800);
+              return function() { clearTimeout(t); };
             }
           }, [toast]);
 
-          useEffect(() => {
+          useEffect(function() {
             if (undoData) {
-              const t = setTimeout(() => setUndoData(null), 5000);
-              return () => clearTimeout(t);
+              var t = setTimeout(function() { setUndoData(null); }, 5000);
+              return function() { clearTimeout(t); };
             }
           }, [undoData]);
 
-          const todayStr = formatDate(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
+          var now = new Date();
+          var todayStr = formatDate(now.getFullYear(), now.getMonth(), now.getDate());
 
-          const addHabit = () => {
+          var addHabit = function() {
             if (!newHabitName.trim()) return;
-            const colorIdx = habits.length % COLORS.length;
-            setHabits(prev => [...prev, {
-              id: Date.now().toString(),
-              name: newHabitName.trim(),
-              cooldown: newHabitDays,
-              icon: newHabitIcon,
-              color: colorIdx,
-              logs: [],
-            }]);
+            var colorIdx = habits.length % COLORS.length;
+            setHabits(function(prev) {
+              return prev.concat([{
+                id: Date.now().toString(),
+                name: newHabitName.trim(),
+                cooldown: newHabitDays,
+                icon: newHabitIcon,
+                color: colorIdx,
+                logs: []
+              }]);
+            });
             setNewHabitName("");
             setNewHabitDays(4);
             setNewHabitIcon("🍺");
@@ -140,476 +148,467 @@
             setToast("습관이 추가되었습니다");
           };
 
-          const deleteHabit = (id) => {
-            setHabits(prev => prev.filter(h => h.id !== id));
+          var deleteHabit = function(id) {
+            setHabits(function(prev) { return prev.filter(function(h) { return h.id !== id; }); });
             if (selectedHabit === id) setSelectedHabit(null);
             setConfirmDelete(null);
             setToast("삭제되었습니다");
           };
 
-          const toggleLog = (habitId, dateStr) => {
-            setHabits(prev => prev.map(h => {
-              if (h.id !== habitId) return h;
-              const existing = h.logs.includes(dateStr);
-              if (existing) {
-                setUndoData({ habitId, dateStr, action: "remove" });
-                return { ...h, logs: h.logs.filter(d => d !== dateStr) };
-              }
-              const isLocked = h.logs.some(logDate => {
-                const diff = daysBetween(logDate, dateStr);
-                return diff > 0 && diff < h.cooldown;
+          var toggleLog = function(habitId, dateStr) {
+            setHabits(function(prev) {
+              return prev.map(function(h) {
+                if (h.id !== habitId) return h;
+                var existing = h.logs.indexOf(dateStr) !== -1;
+                if (existing) {
+                  setUndoData({ habitId: habitId, dateStr: dateStr, action: "remove" });
+                  return Object.assign({}, h, { logs: h.logs.filter(function(d) { return d !== dateStr; }) });
+                }
+                var isLocked = h.logs.some(function(logDate) {
+                  var diff = daysBetween(logDate, dateStr);
+                  return diff > 0 && diff < h.cooldown;
+                });
+                if (isLocked) {
+                  setToast("🔒 아직 쿨다운 기간입니다!");
+                  return h;
+                }
+                setUndoData({ habitId: habitId, dateStr: dateStr, action: "add" });
+                return Object.assign({}, h, { logs: h.logs.concat([dateStr]).sort() });
               });
-              if (isLocked) {
-                setToast("🔒 아직 쿨다운 기간입니다!");
-                return h;
-              }
-              setUndoData({ habitId, dateStr, action: "add" });
-              return { ...h, logs: [...h.logs, dateStr].sort() };
-            }));
+            });
           };
 
-          const handleUndo = () => {
+          var handleUndo = function() {
             if (!undoData) return;
-            setHabits(prev => prev.map(h => {
-              if (h.id !== undoData.habitId) return h;
-              if (undoData.action === "add") {
-                return { ...h, logs: h.logs.filter(d => d !== undoData.dateStr) };
-              } else {
-                return { ...h, logs: [...h.logs, undoData.dateStr].sort() };
-              }
-            }));
+            setHabits(function(prev) {
+              return prev.map(function(h) {
+                if (h.id !== undoData.habitId) return h;
+                if (undoData.action === "add") {
+                  return Object.assign({}, h, { logs: h.logs.filter(function(d) { return d !== undoData.dateStr; }) });
+                } else {
+                  return Object.assign({}, h, { logs: h.logs.concat([undoData.dateStr]).sort() });
+                }
+              });
+            });
             setUndoData(null);
             setToast("되돌렸습니다");
           };
 
-          const getLockedDates = (habit) => {
-            const locked = new Set();
-            habit.logs.forEach(logDate => {
-              for (let i = 1; i < habit.cooldown; i++) {
-                const d = parseDate(logDate);
+          var getLockedDates = function(habit) {
+            var locked = {};
+            habit.logs.forEach(function(logDate) {
+              for (var i = 1; i < habit.cooldown; i++) {
+                var d = parseDate(logDate);
                 d.setDate(d.getDate() + i);
-                locked.add(formatDate(d.getFullYear(), d.getMonth(), d.getDate()));
+                locked[formatDate(d.getFullYear(), d.getMonth(), d.getDate())] = true;
               }
             });
             return locked;
           };
 
-          const getNextAvailable = (habit) => {
+          var getNextAvailable = function(habit) {
             if (habit.logs.length === 0) return null;
-            const lastLog = habit.logs[habit.logs.length - 1];
-            const d = parseDate(lastLog);
+            var lastLog = habit.logs[habit.logs.length - 1];
+            var d = parseDate(lastLog);
             d.setDate(d.getDate() + habit.cooldown);
             return formatDate(d.getFullYear(), d.getMonth(), d.getDate());
           };
 
-          const prevMonth = () => {
-            if (currentMonth === 0) { setCurrentMonth(11); setCurrentYear(y => y - 1); }
-            else setCurrentMonth(m => m - 1);
+          var prevMonth = function() {
+            if (currentMonth === 0) { setCurrentMonth(11); setCurrentYear(function(y) { return y - 1; }); }
+            else setCurrentMonth(function(m) { return m - 1; });
           };
 
-          const nextMonth = () => {
-            if (currentMonth === 11) { setCurrentMonth(0); setCurrentYear(y => y + 1); }
-            else setCurrentMonth(m => m + 1);
+          var nextMonth = function() {
+            if (currentMonth === 11) { setCurrentMonth(0); setCurrentYear(function(y) { return y + 1; }); }
+            else setCurrentMonth(function(m) { return m + 1; });
           };
 
-          const goToday = () => {
+          var goToday = function() {
             setCurrentMonth(new Date().getMonth());
             setCurrentYear(new Date().getFullYear());
           };
 
-          const saveEdit = () => {
+          var saveEdit = function() {
             if (!editName.trim() || !showEditModal) return;
-            setHabits(prev => prev.map(h => {
-              if (h.id !== showEditModal) return h;
-              return { ...h, name: editName.trim(), cooldown: editDays, icon: editIcon };
-            }));
+            setHabits(function(prev) {
+              return prev.map(function(h) {
+                if (h.id !== showEditModal) return h;
+                return Object.assign({}, h, { name: editName.trim(), cooldown: editDays, icon: editIcon });
+              });
+            });
             setShowEditModal(null);
             setToast("수정되었습니다");
           };
 
-          const openEdit = (habit) => {
+          var openEdit = function(habit) {
             setEditName(habit.name);
             setEditDays(habit.cooldown);
             setEditIcon(habit.icon);
             setShowEditModal(habit.id);
           };
 
-          const daysInMonth = getDaysInMonth(currentYear, currentMonth);
-          const firstDay = getFirstDayOfMonth(currentYear, currentMonth);
+          var daysInMonth = getDaysInMonth(currentYear, currentMonth);
+          var firstDay = getFirstDayOfMonth(currentYear, currentMonth);
 
-          const activeHabit = habits.find(h => h.id === selectedHabit);
-          const lockedDates = activeHabit ? getLockedDates(activeHabit) : new Set();
-          const activeColor = activeHabit ? COLORS[activeHabit.color] : null;
+          var activeHabit = habits.find(function(h) { return h.id === selectedHabit; }) || null;
+          var lockedDates = activeHabit ? getLockedDates(activeHabit) : {};
+          var activeColor = activeHabit ? COLORS[activeHabit.color] : null;
 
-          const allHabitsData = selectedHabit ? [] : habits.map(h => ({
-            ...h,
-            locked: getLockedDates(h),
-            c: COLORS[h.color],
-          }));
+          var allHabitsData = selectedHabit ? [] : habits.map(function(h) {
+            return Object.assign({}, h, { locked: getLockedDates(h), c: COLORS[h.color] });
+          });
 
-          const calendarCells = [];
-          for (let i = 0; i < firstDay; i++) calendarCells.push(null);
-          for (let d = 1; d <= daysInMonth; d++) calendarCells.push(d);
+          var calendarCells = [];
+          for (var i = 0; i < firstDay; i++) calendarCells.push(null);
+          for (var d = 1; d <= daysInMonth; d++) calendarCells.push(d);
 
-          const styles = {
+          var S = {
             container: { background: "#0B0B0E", minHeight: "100vh", color: "#ffffff", paddingBottom: 60, maxWidth: 480, margin: "0 auto", position: "relative" },
             header: { padding: "36px 24px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" },
-            title: { fontSize: 20, fontWeight: 700, letterSpacing: "1.5px", color: "#ffffff" },
+            title: { fontSize: 20, fontWeight: 700, letterSpacing: "1.5px", color: "#ffffff", margin: 0 },
             subtitle: { fontSize: 11, color: "rgba(255,255,255,0.3)", marginTop: 4, fontWeight: 400 },
             addBtn: { width: 38, height: 38, borderRadius: "50%", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", color: "#ffffff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14 },
             bulletsContainer: { padding: "0 24px 16px", overflowX: "auto" },
             bulletsScroll: { display: "flex", gap: 6 },
-            bulletChip: { display: "flex", alignItems: "center", padding: "7px 14px", borderRadius: 18, cursor: "pointer", whiteSpace: "nowrap", fontSize: 12, fontWeight: 500, position: "relative" },
-            dotIndicator: { width: 5, height: 5, borderRadius: "50%", marginLeft: 5 },
+            bulletChip: { display: "flex", alignItems: "center", padding: "7px 14px", borderRadius: 18, cursor: "pointer", whiteSpace: "nowrap", fontSize: 12, fontWeight: 500, position: "relative", border: "none", fontFamily: "inherit" },
             calendarCard: { margin: "0 16px 20px", padding: "20px 12px", background: "rgba(255,255,255,0.02)", borderRadius: 20, border: "1px solid rgba(255,255,255,0.03)" },
             calendarNav: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, padding: "0 8px" },
             navBtn: { width: 32, height: 32, background: "transparent", border: "none", color: "rgba(255,255,255,0.3)", fontSize: 22, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" },
-            monthLabel: { fontSize: 15, fontWeight: 600, color: "#ffffff", background: "none", border: "none", cursor: "pointer", letterSpacing: "0.5px" },
+            monthLabel: { fontSize: 15, fontWeight: 600, color: "#ffffff", background: "none", border: "none", cursor: "pointer", letterSpacing: "0.5px", fontFamily: "inherit" },
             dayHeaders: { display: "grid", gridTemplateColumns: "repeat(7, 1fr)", marginBottom: 10 },
             dayHeader: { textAlign: "center", fontSize: 10, fontWeight: 500 },
             calendarGrid: { display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "5px" },
             emptyCell: { aspectRatio: "1" },
-            dayCell: { aspectRatio: "1", borderRadius: 12, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", border: "none", position: "relative" },
-            dayNumber: { fontSize: 11 },
-            todayIndicator: { position: "absolute", bottom: 4, width: 3, height: 3, borderRadius: "50%", background: "rgba(255,255,255,0.4)" },
-            globalDotsGrid: { display: "flex", gap: 1, justifyContent: "center", transform: "scale(0.85)" },
-            globalLocksGrid: { display: "flex", gap: 2, justifyContent: "center", marginTop: 2 },
+            dayCell: { aspectRatio: "1", borderRadius: 12, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative", padding: 0, fontFamily: "inherit" },
             cardsSection: { padding: "0 16px", display: "flex", flexDirection: "column", gap: 10 },
-            habitCard: { padding: "18px", background: "rgba(255,255,255,0.02)", borderRadius: 20, border: "1px solid rgba(255,255,255,0.03)" },
+            habitCard: { padding: 18, background: "rgba(255,255,255,0.02)", borderRadius: 20, border: "1px solid rgba(255,255,255,0.03)" },
             habitCardTop: { display: "flex", justifyContent: "space-between", alignItems: "center" },
             cardIconBox: { width: 36, height: 36, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 },
-            cardName: { fontSize: 14, fontWeight: 600, color: "#ffffff" },
-            cardCooldownText: { fontSize: 11, color: "rgba(255,255,255,0.3)", marginTop: 2 },
-            smallActionBtn: { width: 28, height: 28, background: "transparent", border: "none", cursor: "pointer", fontSize: 12, opacity: 0.3 },
             statusRow: { display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 16 },
             statusBadge: { padding: "4px 10px", borderRadius: 6, fontSize: 11, fontWeight: 500 },
-            statGroup: { display: "flex", gap: 12 },
-            statItem: { display: "flex", alignItems: "center", gap: 4, fontSize: 12 },
-            statLabel: { color: "rgba(255,255,255,0.25)", fontSize: 11 },
             progressContainer: { marginTop: 14, height: 2, background: "rgba(255,255,255,0.03)", borderRadius: 1, overflow: "hidden" },
-            emptyState: { textAlign: "center", padding: "40px 20px" },
-            overlay: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(16px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: 24 },
+            overlay: { position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(16px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: 24 },
             modal: { background: "#121217", borderRadius: 24, padding: 24, width: "100%", maxWidth: 360, border: "1px solid rgba(255,255,255,0.06)" },
-            modalTitle: { fontSize: 16, fontWeight: 600, marginBottom: 20, color: "#ffffff", letterSpacing: "-0.3px" },
+            modalTitle: { fontSize: 16, fontWeight: 600, marginBottom: 20, marginTop: 0, color: "#ffffff" },
             label: { display: "block", fontSize: 11, color: "rgba(255,255,255,0.3)", marginBottom: 8, fontWeight: 500 },
             iconGrid: { display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 18 },
             iconBtn: { width: 36, height: 36, borderRadius: 8, fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" },
-            input: { width: "100%", padding: "10px 14px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 10, color: "#ffffff", fontSize: 13, outline: "none", marginBottom: 18 },
+            input: { width: "100%", padding: "10px 14px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 10, color: "#ffffff", fontSize: 13, outline: "none", marginBottom: 18, boxSizing: "border-box", fontFamily: "inherit" },
             daysSelector: { display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 24 },
-            dayOption: { padding: "6px 12px", borderRadius: 8, fontSize: 12, cursor: "pointer", fontWeight: 500 },
+            dayOption: { padding: "6px 12px", borderRadius: 8, fontSize: 12, cursor: "pointer", fontWeight: 500, border: "none", fontFamily: "inherit" },
             modalActions: { display: "flex", gap: 8 },
-            cancelBtn: { flex: 1, padding: "10px", borderRadius: 10, background: "transparent", border: "1px solid rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.4)", fontSize: 13, cursor: "pointer" },
-            confirmBtn: { flex: 1, padding: "10px", borderRadius: 10, background: "#4ECDC4", border: "none", color: "#0B0B0E", fontSize: 13, cursor: "pointer", fontWeight: 600 },
+            cancelBtn: { flex: 1, padding: 10, borderRadius: 10, background: "transparent", border: "1px solid rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.4)", fontSize: 13, cursor: "pointer", fontFamily: "inherit" },
+            confirmBtn: { flex: 1, padding: 10, borderRadius: 10, background: "#4ECDC4", border: "none", color: "#0B0B0E", fontSize: 13, cursor: "pointer", fontWeight: 600, fontFamily: "inherit" },
             toast: { position: "fixed", bottom: 40, left: "50%", transform: "translateX(-50%)", background: "#ffffff", color: "#050507", padding: "8px 18px", borderRadius: 20, fontSize: 12, fontWeight: 500, zIndex: 200, boxShadow: "0 8px 24px rgba(0,0,0,0.4)", whiteSpace: "nowrap" },
             undoBar: { position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)", background: "#121217", border: "1px solid rgba(255,255,255,0.08)", padding: "10px 14px", borderRadius: 14, display: "flex", alignItems: "center", gap: 12, zIndex: 200, color: "rgba(255,255,255,0.6)", fontSize: 12, whiteSpace: "nowrap" },
-            undoBtn: { background: "rgba(78,205,196,0.1)", border: "1px solid rgba(78,205,196,0.2)", color: "#4ECDC4", padding: "4px 10px", borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: "pointer" }
+            undoBtn: { background: "rgba(78,205,196,0.1)", border: "1px solid rgba(78,205,196,0.2)", color: "#4ECDC4", padding: "4px 10px", borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }
           };
 
-          const styleElement = e('style', null, `
-            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap');
-            * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-            body { font-family: 'Inter', 'Noto Sans KR', sans-serif; }
-            ::-webkit-scrollbar { display: none; }
-          `);
-
-          const headerSection = e('div', { style: styles.header },
+          // === HEADER ===
+          var headerEl = e('div', { style: S.header },
             e('div', null,
-              e('h1', { style: styles.title }, 'HABIT LOCK'),
-              e('p', { style: styles.subtitle }, '인터벌 중심의 절제 기록 인터페이스')
+              e('h1', { style: S.title }, 'HABIT LOCK'),
+              e('p', { style: S.subtitle }, '인터벌 중심의 절제 기록 인터페이스')
             ),
-            e('button', { onClick: () => setShowAddModal(true), style: styles.addBtn }, e('span', null, '＋'))
+            e('button', { onClick: function() { setShowAddModal(true); }, style: S.addBtn }, '＋')
           );
 
-          const bulletsSection = e('div', { style: styles.bulletsContainer },
-            e('div', { style: styles.bulletsScroll },
-              e('button', {
-                onClick: () => setSelectedHabit(null),
-                style: {
-                  ...styles.bulletChip,
-                  background: !selectedHabit ? "rgba(255,255,255,0.08)" : "transparent",
-                  color: !selectedHabit ? "#ffffff" : "rgba(255,255,255,0.4)",
-                  border: !selectedHabit ? "1px solid rgba(255,255,255,0.12)" : "1px solid rgba(255,255,255,0.04)"
-                }
-              }, e('span', null, '📋 전체')),
-              habits.map(h => {
-                const c = COLORS[h.color];
-                const isActive = selectedHabit === h.id;
-                const nextDate = getNextAvailable(h);
-                const isAvailable = !nextDate || daysBetween(todayStr, nextDate) <= 0;
-                return e('button', {
-                  key: h.id,
-                  onClick: () => setSelectedHabit(isActive ? null : h.id),
-                  style: {
-                    ...styles.bulletChip,
-                    background: isActive ? c.light : "transparent",
-                    color: isActive ? c.text : "rgba(255,255,255,0.4)",
-                    border: isActive ? `1px solid ${c.border}` : "1px solid rgba(255,255,255,0.04)"
-                  }
-                }, 
-                  e('span', null, `${h.icon} ${h.name}`),
-                  !isAvailable && e('span', { style: { ...styles.dotIndicator, background: c.bg } })
-                );
+          // === BULLETS ===
+          var bulletEls = [
+            e('button', {
+              key: 'all',
+              onClick: function() { setSelectedHabit(null); },
+              style: Object.assign({}, S.bulletChip, {
+                background: !selectedHabit ? "rgba(255,255,255,0.08)" : "transparent",
+                color: !selectedHabit ? "#ffffff" : "rgba(255,255,255,0.4)",
+                border: !selectedHabit ? "1px solid rgba(255,255,255,0.12)" : "1px solid rgba(255,255,255,0.04)"
               })
-            )
+            }, '📋 전체')
+          ].concat(habits.map(function(h) {
+            var c = COLORS[h.color];
+            var isActive = selectedHabit === h.id;
+            var nextDate = getNextAvailable(h);
+            var isAvailable = !nextDate || daysBetween(todayStr, nextDate) <= 0;
+            return e('button', {
+              key: h.id,
+              onClick: function() { setSelectedHabit(isActive ? null : h.id); },
+              style: Object.assign({}, S.bulletChip, {
+                background: isActive ? c.light : "transparent",
+                color: isActive ? c.text : "rgba(255,255,255,0.4)",
+                border: isActive ? "1px solid " + c.border : "1px solid rgba(255,255,255,0.04)"
+              })
+            },
+              h.icon + ' ' + h.name,
+              !isAvailable ? e('span', { style: { width: 5, height: 5, borderRadius: "50%", marginLeft: 5, background: c.bg, display: "inline-block" } }) : null
+            );
+          }));
+
+          var bulletsEl = e('div', { style: S.bulletsContainer },
+            e('div', { style: S.bulletsScroll }, bulletEls)
           );
 
-          const calendarNavSection = e('div', { style: styles.calendarNav },
-            e('button', { onClick: prevMonth, style: styles.navBtn }, '‹'),
-            e('button', { onClick: goToday, style: styles.monthLabel }, `${currentYear}. ${String(currentMonth + 1).padStart(2, '0')}`),
-            e('button', { onClick: nextMonth, style: styles.navBtn }, '›')
+          // === CALENDAR ===
+          var calNavEl = e('div', { style: S.calendarNav },
+            e('button', { onClick: prevMonth, style: S.navBtn }, '‹'),
+            e('button', { onClick: goToday, style: S.monthLabel }, currentYear + '. ' + String(currentMonth + 1).padStart(2, '0')),
+            e('button', { onClick: nextMonth, style: S.navBtn }, '›')
           );
 
-          const calendarHeaders = e('div', { style: styles.dayHeaders },
-            DAYS_KR.map((d, i) => e('div', {
-              key: d,
-              style: { ...styles.dayHeader, color: i === 0 ? "rgba(255,107,107,0.5)" : i === 6 ? "rgba(78,205,196,0.5)" : "rgba(255,255,255,0.2)" }
-            }, d))
+          var calHeaderEl = e('div', { style: S.dayHeaders },
+            DAYS_KR.map(function(d, i) {
+              return e('div', {
+                key: d,
+                style: Object.assign({}, S.dayHeader, {
+                  color: i === 0 ? "rgba(255,107,107,0.5)" : i === 6 ? "rgba(78,205,196,0.5)" : "rgba(255,255,255,0.2)"
+                })
+              }, d);
+            })
           );
 
-          const gridCells = calendarCells.map((day, idx) => {
-            if (day === null) return e('div', { key: `e-${idx}`, style: styles.emptyCell });
+          var gridCells = calendarCells.map(function(day, idx) {
+            if (day === null) return e('div', { key: 'e-' + idx, style: S.emptyCell });
 
-            const dateStr = formatDate(currentYear, currentMonth, day);
-            const isToday = dateStr === todayStr;
-            const dayOfWeek = (firstDay + day - 1) % 7;
+            var dateStr = formatDate(currentYear, currentMonth, day);
+            var isToday = dateStr === todayStr;
+            var dayOfWeek = (firstDay + day - 1) % 7;
 
-            let cellContent = null;
-            let cellBg = "rgba(255,255,255,0.01)";
-            let cellBorder = "1px solid transparent";
+            var cellContent = null;
+            var cellBg = "rgba(255,255,255,0.01)";
+            var cellBorder = "1px solid transparent";
 
             if (activeHabit) {
-              const isLogged = activeHabit.logs.includes(dateStr);
-              const isLocked = lockedDates.has(dateStr);
+              var isLogged = activeHabit.logs.indexOf(dateStr) !== -1;
+              var isLocked = !!lockedDates[dateStr];
 
               if (isLogged) {
                 cellBg = activeColor.bg;
                 cellContent = e('span', { style: { fontSize: 15 } }, activeHabit.icon);
               } else if (isLocked) {
                 cellBg = "rgba(255,255,255,0.02)";
-                cellBorder = `1px dashed ${activeColor.border}`;
+                cellBorder = "1px dashed " + activeColor.border;
                 cellContent = e('span', { style: { fontSize: 10, color: activeColor.text, opacity: 0.6 } }, '🔒');
               }
             } else {
-              const dots = allHabitsData.filter(h => h.logs.includes(dateStr));
-              const locks = allHabitsData.filter(h => !h.logs.includes(dateStr) && h.locked.has(dateStr));
+              var dots = allHabitsData.filter(function(h) { return h.logs.indexOf(dateStr) !== -1; });
+              var locks = allHabitsData.filter(function(h) { return h.logs.indexOf(dateStr) === -1 && h.locked[dateStr]; });
               if (dots.length > 0) {
-                cellContent = e('div', { style: styles.globalDotsGrid },
-                  dots.slice(0, 4).map(h => e('span', { key: h.id, style: { fontSize: 9 } }, h.icon))
+                cellContent = e('div', { style: { display: "flex", gap: 1, justifyContent: "center", transform: "scale(0.85)" } },
+                  dots.slice(0, 4).map(function(h) { return e('span', { key: h.id, style: { fontSize: 9 } }, h.icon); })
                 );
               } else if (locks.length > 0) {
-                cellContent = e('div', { style: styles.globalLocksGrid },
-                  locks.slice(0, 3).map(h => e('span', { key: h.id, style: { width: 4, height: 4, borderRadius: "50%", background: h.c.bg, opacity: 0.4 } }))
+                cellContent = e('div', { style: { display: "flex", gap: 2, justifyContent: "center", marginTop: 2 } },
+                  locks.slice(0, 3).map(function(h) { return e('span', { key: h.id, style: { width: 4, height: 4, borderRadius: "50%", background: h.c.bg, opacity: 0.4, display: "inline-block" } }); })
                 );
               }
             }
 
+            var textColor = (cellContent && activeHabit) ? "#000000" : isToday ? "#ffffff" : dayOfWeek === 0 ? "rgba(255,107,107,0.6)" : dayOfWeek === 6 ? "rgba(78,205,196,0.6)" : "rgba(255,255,255,0.4)";
+
             return e('button', {
               key: day,
-              onClick: () => activeHabit && toggleLog(activeHabit.id, dateStr),
-              style: { ...styles.dayCell, background: cellBg, border: cellBorder, cursor: activeHabit ? "pointer" : "default" }
+              onClick: function() { if (activeHabit) toggleLog(activeHabit.id, dateStr); },
+              style: Object.assign({}, S.dayCell, { background: cellBg, border: cellBorder, cursor: activeHabit ? "pointer" : "default" })
             },
-              e('span', {
-                style: {
-                  ...styles.dayNumber,
-                  fontWeight: isToday ? "700" : "400",
-                  color: cellContent && activeHabit ? "#000000" : isToday ? "#ffffff" : dayOfWeek === 0 ? "rgba(255,107,107,0.6)" : dayOfWeek === 6 ? "rgba(78,205,196,0.6)" : "rgba(255,255,255,0.4)"
-                }
-              }, day),
-              cellContent && e('div', { style: { marginTop: 2, display: "flex", justifyContent: "center" } }, cellContent),
-              isToday && !cellContent && e('div', { style: styles.todayIndicator })
+              e('span', { style: { fontSize: 11, fontWeight: isToday ? 700 : 400, color: textColor } }, day),
+              cellContent ? e('div', { style: { marginTop: 2, display: "flex", justifyContent: "center" } }, cellContent) : null,
+              (isToday && !cellContent) ? e('div', { style: { position: "absolute", bottom: 4, width: 3, height: 3, borderRadius: "50%", background: "rgba(255,255,255,0.4)" } }) : null
             );
           });
 
-          const calendarCardSection = e('div', { style: styles.calendarCard },
-            calendarNavSection,
-            calendarHeaders,
-            e('div', { style: styles.calendarGrid }, gridCells)
+          var calendarEl = e('div', { style: S.calendarCard },
+            calNavEl,
+            calHeaderEl,
+            e('div', { style: S.calendarGrid }, gridCells)
           );
 
-          const habitsListSection = e('div', { style: styles.cardsSection },
-            (activeHabit ? [activeHabit] : habits).map(h => {
-              const c = COLORS[h.color];
-              const nextDate = getNextAvailable(h);
-              const isAvailable = !nextDate || daysBetween(todayStr, nextDate) <= 0;
-              const daysLeft = nextDate ? Math.max(0, daysBetween(todayStr, nextDate)) : 0;
-              const totalLogs = h.logs.length;
-              const thisMonthLogs = h.logs.filter(d => d.startsWith(`${currentYear}-${String(currentMonth + 1).padStart(2, "0")}`)).length;
+          // === HABIT CARDS ===
+          var habitsList = activeHabit ? [activeHabit] : habits;
+          var cardsEls = habitsList.map(function(h) {
+            var c = COLORS[h.color];
+            var nextDate = getNextAvailable(h);
+            var isAvailable = !nextDate || daysBetween(todayStr, nextDate) <= 0;
+            var daysLeft = nextDate ? Math.max(0, daysBetween(todayStr, nextDate)) : 0;
+            var totalLogs = h.logs.length;
+            var monthPrefix = currentYear + "-" + String(currentMonth + 1).padStart(2, "0");
+            var thisMonthLogs = h.logs.filter(function(d) { return d.indexOf(monthPrefix) === 0; }).length;
 
-              return e('div', { key: h.id, style: styles.habitCard },
-                e('div', { style: styles.habitCardTop },
-                  e('div', { style: { display: "flex", alignItems: "center", gap: 12 } },
-                    e('div', { style: { ...styles.cardIconBox, background: c.light, border: `1px solid ${c.border}` } }, h.icon),
-                    e('div', null,
-                      e('div', { style: styles.cardName }, h.name),
-                      e('div', { style: styles.cardCooldownText }, `${h.cooldown}일 간격 통제`)
-                    )
-                  ),
-                  e('div', { style: { display: "flex", gap: 4 } },
-                    e('button', { onClick: () => openEdit(h), style: styles.smallActionBtn }, '✏️'),
-                    e('button', { onClick: () => setConfirmDelete(h.id), style: styles.smallActionBtn }, '🗑️')
+            return e('div', { key: h.id, style: S.habitCard },
+              e('div', { style: S.habitCardTop },
+                e('div', { style: { display: "flex", alignItems: "center", gap: 12 } },
+                  e('div', { style: Object.assign({}, S.cardIconBox, { background: c.light, border: "1px solid " + c.border }) }, h.icon),
+                  e('div', null,
+                    e('div', { style: { fontSize: 14, fontWeight: 600, color: "#ffffff" } }, h.name),
+                    e('div', { style: { fontSize: 11, color: "rgba(255,255,255,0.3)", marginTop: 2 } }, h.cooldown + '일 간격 통제')
                   )
                 ),
-                e('div', { style: styles.statusRow },
-                  e('div', {
-                    style: {
-                      ...styles.statusBadge,
-                      background: isAvailable ? "rgba(78,205,196,0.06)" : "rgba(255,107,107,0.06)",
-                      color: isAvailable ? "#4ECDC4" : "#FF6B6B",
-                      border: isAvailable ? "1px solid rgba(78,205,196,0.15)" : "1px solid rgba(255,107,107,0.15)"
-                    }
-                  }, isAvailable ? "기록 가능 정합" : `잠금 해제까지 ${daysLeft}일`),
-                  e('div', { style: styles.statGroup },
-                    e('div', { style: styles.statItem },
-                      e('span', { style: styles.statLabel }, '당월'),
-                      e('span', { style: { color: c.text, fontWeight: "600" } }, thisMonthLogs)
-                    ),
-                    e('div', { style: styles.statItem },
-                      e('span', { style: styles.statLabel }, '누적'),
-                      e('span', { style: { color: "rgba(255,255,255,0.7)", fontWeight: "600" } }, totalLogs)
-                    )
-                  )
-                ),
-                !isAvailable && e('div', { style: styles.progressContainer },
-                  e('div', {
-                    style: {
-                      height: "100%",
-                      background: c.bg,
-                      width: `${((h.cooldown - daysLeft) / h.cooldown) * 100}%`,
-                      transition: "width 0.4s ease"
-                    }
-                  })
+                e('div', { style: { display: "flex", gap: 4 } },
+                  e('button', { onClick: function() { openEdit(h); }, style: { width: 28, height: 28, background: "transparent", border: "none", cursor: "pointer", fontSize: 12, opacity: 0.3 } }, '✏️'),
+                  e('button', { onClick: function() { setConfirmDelete(h.id); }, style: { width: 28, height: 28, background: "transparent", border: "none", cursor: "pointer", fontSize: 12, opacity: 0.3 } }, '🗑️')
                 )
-              );
-            }),
-            habits.length === 0 && e('div', { style: styles.emptyState },
+              ),
+              e('div', { style: S.statusRow },
+                e('div', {
+                  style: Object.assign({}, S.statusBadge, {
+                    background: isAvailable ? "rgba(78,205,196,0.06)" : "rgba(255,107,107,0.06)",
+                    color: isAvailable ? "#4ECDC4" : "#FF6B6B",
+                    border: isAvailable ? "1px solid rgba(78,205,196,0.15)" : "1px solid rgba(255,107,107,0.15)"
+                  })
+                }, isAvailable ? '기록 가능' : '잠금 해제까지 ' + daysLeft + '일'),
+                e('div', { style: { display: "flex", gap: 12 } },
+                  e('div', { style: { display: "flex", alignItems: "center", gap: 4, fontSize: 12 } },
+                    e('span', { style: { color: "rgba(255,255,255,0.25)", fontSize: 11 } }, '당월'),
+                    e('span', { style: { color: c.text, fontWeight: 600 } }, thisMonthLogs)
+                  ),
+                  e('div', { style: { display: "flex", alignItems: "center", gap: 4, fontSize: 12 } },
+                    e('span', { style: { color: "rgba(255,255,255,0.25)", fontSize: 11 } }, '누적'),
+                    e('span', { style: { color: "rgba(255,255,255,0.7)", fontWeight: 600 } }, totalLogs)
+                  )
+                )
+              ),
+              !isAvailable ? e('div', { style: S.progressContainer },
+                e('div', { style: { height: "100%", background: c.bg, width: ((h.cooldown - daysLeft) / h.cooldown * 100) + "%", transition: "width 0.4s ease" } })
+              ) : null
+            );
+          });
+
+          var cardsSection = e('div', { style: S.cardsSection },
+            cardsEls,
+            habits.length === 0 ? e('div', { style: { textAlign: "center", padding: "40px 20px" } },
               e('p', { style: { fontSize: 24, marginBottom: 8 } }, '⚡'),
               e('p', { style: { color: "rgba(255,255,255,0.3)", fontSize: 13 } }, '상단의 버튼을 눌러 통제 리스트를 개설하세요.')
-            )
+            ) : null
           );
 
-          let addModalElement = null;
-          if (showAddModal) {
-            addModalElement = e('div', { style: styles.overlay, onClick: () => setShowAddModal(false) },
-              e('div', { style: styles.modal, onClick: ev => ev.stopPropagation() },
-                e('h2', { style: styles.modalTitle }, '새로운 통제 생성'),
-                e('label', { style: styles.label }, '상징 아이콘'),
-                e('div', { style: styles.iconGrid },
-                  ICONS.map(ic => e('button', {
+          // === ADD MODAL ===
+          var addModalEl = showAddModal ? e('div', { style: S.overlay, onClick: function() { setShowAddModal(false); } },
+            e('div', { style: S.modal, onClick: function(ev) { ev.stopPropagation(); } },
+              e('h2', { style: S.modalTitle }, '새로운 통제 생성'),
+              e('label', { style: S.label }, '상징 아이콘'),
+              e('div', { style: S.iconGrid },
+                ICONS.map(function(ic) {
+                  return e('button', {
                     key: ic,
-                    onClick: () => setNewHabitIcon(ic),
-                    style: {
-                      ...styles.iconBtn,
+                    onClick: function() { setNewHabitIcon(ic); },
+                    style: Object.assign({}, S.iconBtn, {
                       background: newHabitIcon === ic ? "rgba(255,255,255,0.08)" : "transparent",
                       border: newHabitIcon === ic ? "1px solid rgba(255,255,255,0.2)" : "1px solid rgba(255,255,255,0.03)"
-                    }
-                  }, ic))
-                ),
-                e('label', { style: styles.label }, '통제 대상 이름'),
-                e('input', {
-                  value: newHabitName,
-                  onChange: ev => setNewHabitName(ev.target.value),
-                  placeholder: "예: 음주, 야식, 모바일 게임",
-                  style: styles.input,
-                  onKeyDown: ev => ev.key === "Enter" && addHabit()
-                }),
-                e('label', { style: styles.label }, '필수 쿨다운 간격 설정'),
-                e('div', { style: styles.daysSelector },
-                 .map(d => e('button', {
+                    })
+                  }, ic);
+                })
+              ),
+              e('label', { style: S.label }, '통제 대상 이름'),
+              e('input', {
+                value: newHabitName,
+                onChange: function(ev) { setNewHabitName(ev.target.value); },
+                placeholder: "예: 음주, 야식, 모바일 게임",
+                style: S.input,
+                onKeyDown: function(ev) { if (ev.key === "Enter") addHabit(); }
+              }),
+              e('label', { style: S.label }, '필수 쿨다운 간격 설정'),
+              e('div', { style: S.daysSelector },
+                COOLDOWN_OPTIONS.map(function(d) {
+                  return e('button', {
                     key: d,
-                    onClick: () => setNewHabitDays(d),
-                    style: {
-                      ...styles.dayOption,
+                    onClick: function() { setNewHabitDays(d); },
+                    style: Object.assign({}, S.dayOption, {
                       background: newHabitDays === d ? "rgba(255,255,255,0.08)" : "transparent",
                       border: newHabitDays === d ? "1px solid rgba(255,255,255,0.2)" : "1px solid rgba(255,255,255,0.03)",
                       color: newHabitDays === d ? "#ffffff" : "rgba(255,255,255,0.4)"
-                    }
-                  }, `${d}일`))
-                ),
-                e('div', { style: styles.modalActions },
-                  e('button', { onClick: () => setShowAddModal(false), style: styles.cancelBtn }, '이전'),
-                  e('button', { onClick: addHabit, style: { ...styles.confirmBtn, opacity: newHabitName.trim() ? 1 : 0.3 } }, '생성하기')
-                )
+                    })
+                  }, d + '일');
+                })
+              ),
+              e('div', { style: S.modalActions },
+                e('button', { onClick: function() { setShowAddModal(false); }, style: S.cancelBtn }, '이전'),
+                e('button', { onClick: addHabit, style: Object.assign({}, S.confirmBtn, { opacity: newHabitName.trim() ? 1 : 0.3 }) }, '생성하기')
               )
-            );
-          }
+            )
+          ) : null;
 
-          let editModalElement = null;
-          if (showEditModal) {
-            editModalElement = e('div', { style: styles.overlay, onClick: () => setShowEditModal(null) },
-              e('div', { style: styles.modal, onClick: ev => ev.stopPropagation() },
-                e('h2', { style: styles.modalTitle }, '통제 설정 수정'),
-                e('label', { style: styles.label }, '아이콘 교체'),
-                e('div', { style: styles.iconGrid },
-                  ICONS.map(ic => e('button', {
+          // === EDIT MODAL ===
+          var editModalEl = showEditModal ? e('div', { style: S.overlay, onClick: function() { setShowEditModal(null); } },
+            e('div', { style: S.modal, onClick: function(ev) { ev.stopPropagation(); } },
+              e('h2', { style: S.modalTitle }, '통제 설정 수정'),
+              e('label', { style: S.label }, '아이콘 교체'),
+              e('div', { style: S.iconGrid },
+                ICONS.map(function(ic) {
+                  return e('button', {
                     key: ic,
-                    onClick: () => setEditIcon(ic),
-                    style: {
-                      ...styles.iconBtn,
+                    onClick: function() { setEditIcon(ic); },
+                    style: Object.assign({}, S.iconBtn, {
                       background: editIcon === ic ? "rgba(255,255,255,0.08)" : "transparent",
                       border: editIcon === ic ? "1px solid rgba(255,255,255,0.2)" : "1px solid rgba(255,255,255,0.03)"
-                    }
-                  }, ic))
-                ),
-                e('label', { style: styles.label }, '이름 수정'),
-                e('input', { value: editName, onChange: ev => setEditName(ev.target.value), style: styles.input, onKeyDown: ev => ev.key === "Enter" && saveEdit() }),
-                e('label', { style: styles.label }, '쿨다운 재지정'),
-                e('div', { style: styles.daysSelector },
-                 .map(d => e('button', {
+                    })
+                  }, ic);
+                })
+              ),
+              e('label', { style: S.label }, '이름 수정'),
+              e('input', { value: editName, onChange: function(ev) { setEditName(ev.target.value); }, style: S.input, onKeyDown: function(ev) { if (ev.key === "Enter") saveEdit(); } }),
+              e('label', { style: S.label }, '쿨다운 재지정'),
+              e('div', { style: S.daysSelector },
+                COOLDOWN_OPTIONS.map(function(d) {
+                  return e('button', {
                     key: d,
-                    onClick: () => setEditDays(d),
-                    style: {
-                      ...styles.dayOption,
+                    onClick: function() { setEditDays(d); },
+                    style: Object.assign({}, S.dayOption, {
                       background: editDays === d ? "rgba(255,255,255,0.08)" : "transparent",
                       border: editDays === d ? "1px solid rgba(255,255,255,0.2)" : "1px solid rgba(255,255,255,0.03)",
                       color: editDays === d ? "#ffffff" : "rgba(255,255,255,0.4)"
-                    }
-                  }, `${d}일`))
-                ),
-                e('div', { style: styles.modalActions },
-                  e('button', { onClick: () => setShowEditModal(null), style: styles.cancelBtn }, '취소'),
-                  e('button', { onClick: saveEdit, style: styles.confirmBtn }, '적용')
-                )
+                    })
+                  }, d + '일');
+                })
+              ),
+              e('div', { style: S.modalActions },
+                e('button', { onClick: function() { setShowEditModal(null); }, style: S.cancelBtn }, '취소'),
+                e('button', { onClick: saveEdit, style: S.confirmBtn }, '적용')
               )
-            );
-          }
-
-          let deleteModalElement = null;
-          if (confirmDelete) {
-            deleteModalElement = e('div', { style: styles.overlay, onClick: () => setConfirmDelete(null) },
-              e('div', { style: { ...styles.modal, maxWidth: 300, textAlign: "center" }, onClick: ev => ev.stopPropagation() },
-                e('p', { style: { color: "#ffffff", fontSize: 14, fontWeight: 500, marginBottom: 8 } }, '개설된 통제 정보를 영구 삭제합니까?'),
-                e('p', { style: { color: "rgba(255,255,255,0.3)", fontSize: 12, marginBottom: 24 } }, '연동된 내부 마일스톤 데이터가 모두 유실됩니다.'),
-                e('div', { style: styles.modalActions },
-                  e('button', { onClick: () => setConfirmDelete(null), style: styles.cancelBtn }, '보존'),
-                  e('button', { onClick: () => deleteHabit(confirmDelete), style: { ...styles.confirmBtn, background: "#E15252", color: "#ffffff" } }, '삭제')
-                )
-              )
-            );
-          }
-
-          let toastElement = toast ? e('div', { style: styles.toast }, toast) : null;
-          
-          let undoElement = undoData ? e('div', { style: styles.undoBar },
-            e('span', null, '액션이 타임라인에 반영되었습니다.'),
-            e('button', { onClick: handleUndo, style: styles.undoBtn }, '실행 취소')
+            )
           ) : null;
 
-          return e('div', { style: styles.container },
-            styleElement,
-            headerSection,
-            bulletsSection,
-            calendarCardSection,
-            habitsListSection,
-            addModalElement,
-            editModalElement,
-            deleteModalElement,
-            toastElement,
-            undoElement
+          // === DELETE CONFIRM ===
+          var deleteModalEl = confirmDelete ? e('div', { style: S.overlay, onClick: function() { setConfirmDelete(null); } },
+            e('div', { style: Object.assign({}, S.modal, { maxWidth: 300, textAlign: "center" }), onClick: function(ev) { ev.stopPropagation(); } },
+              e('p', { style: { color: "#ffffff", fontSize: 14, fontWeight: 500, marginBottom: 8 } }, '정말 삭제하시겠습니까?'),
+              e('p', { style: { color: "rgba(255,255,255,0.3)", fontSize: 12, marginBottom: 24 } }, '모든 기록이 함께 삭제됩니다.'),
+              e('div', { style: S.modalActions },
+                e('button', { onClick: function() { setConfirmDelete(null); }, style: S.cancelBtn }, '취소'),
+                e('button', { onClick: function() { deleteHabit(confirmDelete); }, style: Object.assign({}, S.confirmBtn, { background: "#E15252", color: "#ffffff" }) }, '삭제')
+              )
+            )
+          ) : null;
+
+          var toastEl = toast ? e('div', { style: S.toast }, toast) : null;
+          var undoEl = undoData ? e('div', { style: S.undoBar },
+            e('span', null, '기록이 변경되었습니다'),
+            e('button', { onClick: handleUndo, style: S.undoBtn }, '되돌리기')
+          ) : null;
+
+          // === GLOBAL STYLE ===
+          var styleEl = e('style', null,
+            "@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap');" +
+            "* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }" +
+            "body { font-family: 'Inter', 'Noto Sans KR', sans-serif; }" +
+            "::-webkit-scrollbar { display: none; }"
+          );
+
+          return e('div', { style: S.container },
+            styleEl,
+            headerEl,
+            bulletsEl,
+            calendarEl,
+            cardsSection,
+            addModalEl,
+            editModalEl,
+            deleteModalEl,
+            toastEl,
+            undoEl
           );
         }
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(e(HabitLockApp));
+        var root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(React.createElement(HabitLockApp));
+    };
     </script>
 </body>
 </html>
